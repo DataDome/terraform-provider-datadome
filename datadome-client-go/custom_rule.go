@@ -3,6 +3,7 @@ package datadome
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -13,17 +14,19 @@ func (c *Client) GetCustomRules() ([]CustomRule, error) {
 		return nil, err
 	}
 
-	resp, err := c.doRequest(req)
+	customRules := &CustomRules{}
+	resp := &HttpResponse{Data: customRules}
+
+	resp, err = c.doRequest(req, resp)
+
 	if err != nil {
 		return nil, err
 	}
 
-	customRules := resp.Data.CustomRules
-
-	return customRules, nil
+	return customRules.CustomRules, nil
 }
 
-func (c *Client) CreateCustomRule(customRule CustomRule) (*CustomRule, error) {
+func (c *Client) CreateCustomRule(customRule CustomRule) (*ID, error) {
 	reqBody := HttpRequest{
 		Data: customRule,
 	}
@@ -37,12 +40,15 @@ func (c *Client) CreateCustomRule(customRule CustomRule) (*CustomRule, error) {
 		return nil, err
 	}
 
-	resp, err := c.doRequest(req)
+	id := &ID{}
+	resp := &HttpResponse{Data: id}
+
+	resp, err = c.doRequest(req, resp)
 	if err != nil || resp.Status != 200 {
 		return nil, err
 	}
 
-	return &customRule, nil
+	return id, nil
 }
 
 func (c *Client) UpdateCustomRule(customRule CustomRule) (*CustomRule, error) {
@@ -53,25 +59,16 @@ func (c *Client) UpdateCustomRule(customRule CustomRule) (*CustomRule, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("[DEBUG] %+v\n", customRule)
 
-	customRulesList, err := c.GetCustomRules()
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/custom-rules/%d", c.HostURL, customRule.ID), strings.NewReader(string(rb)))
 	if err != nil {
 		return nil, err
 	}
 
-	customRuleId := -1
-	for _, v := range customRulesList {
-		if v.Name == customRule.Name {
-			customRuleId = v.ID
-		}
-	}
+	resp := &HttpResponse{}
 
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/custom-rules/%d", c.HostURL, customRuleId), strings.NewReader(string(rb)))
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.doRequest(req)
+	resp, err = c.doRequest(req, resp)
 	if err != nil || resp.Status != 200 {
 		return nil, err
 	}
@@ -80,24 +77,14 @@ func (c *Client) UpdateCustomRule(customRule CustomRule) (*CustomRule, error) {
 }
 
 func (c *Client) DeleteCustomRule(customRule CustomRule) (*CustomRule, error) {
-	customRulesList, err := c.GetCustomRules()
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/custom-rules/%d", c.HostURL, customRule.ID), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	customRuleId := -1
-	for _, v := range customRulesList {
-		if v.Name == customRule.Name {
-			customRuleId = v.ID
-		}
-	}
+	resp := &HttpResponse{}
 
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/custom-rules/%d", c.HostURL, customRuleId), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.doRequest(req)
+	resp, err = c.doRequest(req, resp)
 	if err != nil || resp.Status != 200 {
 		return nil, err
 	}

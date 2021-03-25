@@ -1,7 +1,7 @@
 package datadome
 
 type HttpResponse struct {
-	Data    CustomRules `json:"data"`
+	Data    interface{} `json:"data"`
 	Status  int         `json:"status"`
 	Errors  []Error     `json:"errors"`
 	Message string      `json:"message"`
@@ -14,6 +14,10 @@ type HttpRequest struct {
 type Error struct {
 	Field   string `json:"field"`
 	Message string `json:"error"`
+}
+
+type ID struct {
+	ID int `json:"id"`
 }
 
 type CustomRules struct {

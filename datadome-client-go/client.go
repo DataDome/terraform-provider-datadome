@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
@@ -34,7 +35,7 @@ func NewClient(host, password *string) (*Client, error) {
 	return &c, nil
 }
 
-func (c *Client) doRequest(req *http.Request) (*HttpResponse, error) {
+func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*HttpResponse, error) {
 	// Add apikey as a query parameter on each request for authentication
 	q := req.URL.Query()
 	q.Add("apikey", c.Token)
@@ -55,8 +56,11 @@ func (c *Client) doRequest(req *http.Request) (*HttpResponse, error) {
 		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
 	}
 
-	httpResponse := HttpResponse{}
-	err = json.Unmarshal(body, &httpResponse)
+	log.Printf("[DEBUG] %+v\n", httpResponse)
+	log.Printf("[DEBUG] %+v\n", httpResponse.Data)
+	log.Printf("[DEBUG] %s\n", body)
+
+	err = json.Unmarshal(body, httpResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -65,5 +69,5 @@ func (c *Client) doRequest(req *http.Request) (*HttpResponse, error) {
 		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, httpResponse.Errors)
 	}
 
-	return &httpResponse, err
+	return httpResponse, err
 }

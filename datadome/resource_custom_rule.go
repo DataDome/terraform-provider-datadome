@@ -2,6 +2,7 @@ package datadome
 
 import (
 	"context"
+	"strconv"
 
 	dd "github.com/datadome/terraform-provider/datadome-client-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -59,7 +60,7 @@ func resourceCustomRuleCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	d.SetId(o.Name)
+	d.SetId(strconv.Itoa(o.ID))
 
 	return diags
 }
@@ -76,7 +77,7 @@ func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	customRule := dd.CustomRule{}
 	for _, v := range o {
-		if v.Name == d.Id() {
+		if strconv.Itoa(v.ID) == d.Id() {
 			customRule = v
 		}
 	}
@@ -93,7 +94,10 @@ func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m inter
 func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*dd.Client)
 
+	id, err := strconv.Atoi(d.Id())
+
 	newCustomRule := dd.CustomRule{
+		ID:           id,
 		Name:         d.Get("name").(string),
 		Response:     d.Get("response").(string),
 		Query:        d.Get("query").(string),
@@ -105,7 +109,7 @@ func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(o.Name)
+	d.SetId(strconv.Itoa(o.ID))
 	return resourceCustomRuleRead(ctx, d, m)
 }
 
@@ -114,11 +118,13 @@ func resourceCustomRuleDelete(ctx context.Context, d *schema.ResourceData, m int
 
 	var diags diag.Diagnostics
 
+	id, err := strconv.Atoi(d.Id())
+
 	customRuleToDelete := dd.CustomRule{
-		Name: d.Get("name").(string),
+		ID: id,
 	}
 
-	_, err := c.DeleteCustomRule(customRuleToDelete)
+	_, err = c.DeleteCustomRule(customRuleToDelete)
 	if err != nil {
 		return diag.FromErr(err)
 	}
