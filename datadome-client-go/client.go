@@ -10,7 +10,7 @@ import (
 )
 
 // Default datadome dashboard URL
-const HostURL string = "https://dev-app.datadome.co/1.0/protection"
+const HostURL string = "https://customer-api.datadome.co/1.0/protection/"
 
 type Client struct {
 	HostURL    string
