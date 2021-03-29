@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     datadome = {
-      version = "0.0.1"
+      version = "1.0.0"
       source = "datadome.co/app/datadome"
     }
   }
@@ -12,8 +12,8 @@ provider "datadome" {
 }
 
 resource "datadome_custom_rule" "new" {
-  name          = "TERRAFORMTEST"
-  query         = "ip: 192.168.1.1a"
+  name          = "test-terraform"
+  query         = "ip: 192.168.0.1"
   response      = "whitelist"
   endpoint_type = "web"
   priority      = "normal"
