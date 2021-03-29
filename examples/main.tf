@@ -2,7 +2,7 @@ terraform {
   required_providers {
     datadome = {
       version = "1.0.0"
-      source = "datadome.co/app/datadome"
+      source  = "datadome/datadome"
     }
   }
 }
