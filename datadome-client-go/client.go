@@ -10,7 +10,7 @@ import (
 )
 
 // Default datadome dashboard URL
-const HostURL string = "https://customer-api.datadome.co/1.0/protection/"
+const HostURL string = "https://customer-api.datadome.co/1.0/protection"
 
 type Client struct {
 	HostURL    string
@@ -37,8 +37,10 @@ func NewClient(host, password *string) (*Client, error) {
 
 func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*HttpResponse, error) {
 	// Add apikey as a query parameter on each request for authentication
+	// Add also withoutTraffic parameter to true to have better performances
 	q := req.URL.Query()
 	q.Add("apikey", c.Token)
+	q.Add("withoutTraffic", "true")
 	req.URL.RawQuery = q.Encode()
 
 	res, err := c.HTTPClient.Do(req)
@@ -56,8 +58,6 @@ func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*Http
 		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
 	}
 
-	log.Printf("[DEBUG] %+v\n", httpResponse)
-	log.Printf("[DEBUG] %+v\n", httpResponse.Data)
 	log.Printf("[DEBUG] %s\n", body)
 
 	err = json.Unmarshal(body, httpResponse)

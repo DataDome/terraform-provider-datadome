@@ -59,6 +59,7 @@ func (c *Client) UpdateCustomRule(customRule CustomRule) (*CustomRule, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	log.Printf("[DEBUG] %+v\n", customRule)
 
 	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/custom-rules/%d", c.HostURL, customRule.ID), strings.NewReader(string(rb)))

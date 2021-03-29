@@ -31,11 +31,11 @@ func resourceCustomRule() *schema.Resource {
 			},
 			"priority": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"endpoint_type": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

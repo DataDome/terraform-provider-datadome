@@ -24,3 +24,4 @@ provider "datadome" {
 ### Optional
 
 - **apikey** (String, Optional) API key to authenticate to DataDome API
+- **host** (String, Optional) Host of the DataDome custom rules API

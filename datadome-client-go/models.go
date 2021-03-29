@@ -29,9 +29,6 @@ type CustomRule struct {
 	Name         string `json:"rule_name"`
 	Response     string `json:"rule_response"`
 	Query        string `json:"query"`
-	IPStart      string `json:"ip_start"`
-	IPEnd        string `json:"ip_end"`
 	EndpointType string `json:"endpoint_type"`
 	Priority     string `json:"rule_priority"`
-	Hits         int    `json:"hits"`
 }
