@@ -18,6 +18,7 @@ resource "datadome_custom_rule" "new" {
   response      = "whitelist"
   endpoint_type = "web"
   priority      = "normal"
+  enabled       = true
 }
 
 ```
@@ -29,6 +30,7 @@ resource "datadome_custom_rule" "new" {
 - `response` - (Required) The response behavior, must be one of `whitelist`, `captcha`, `block`
 - `endpoint_type` - (Optionnal) The endpoint on which you want your custom rule to be applied. If no endpoint type is specified, the custom rule will be applied to all endpoint types.
 - `priority` - (Optionnal) Your rule priority, must be one of `high`, `low`, `normal`
+- `enabled` - (Optional) Determines whether rule is enabled. Defaults to `true`.
 
 
 ## Attributes Reference
