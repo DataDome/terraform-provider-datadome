@@ -31,4 +31,5 @@ type CustomRule struct {
 	Query        string `json:"query"`
 	EndpointType string `json:"endpoint_type"`
 	Priority     string `json:"rule_priority"`
+	Enabled      bool   `json:"rule_enabled"`
 }

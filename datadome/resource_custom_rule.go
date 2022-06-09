@@ -37,6 +37,11 @@ func resourceCustomRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"enabled": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -56,6 +61,7 @@ func resourceCustomRuleCreate(ctx context.Context, d *schema.ResourceData, m int
 		Query:        d.Get("query").(string),
 		EndpointType: d.Get("endpoint_type").(string),
 		Priority:     d.Get("priority").(string),
+		Enabled:      d.Get("enabled").(bool),
 	}
 
 	o, err := c.CreateCustomRule(newCustomRule)
@@ -90,6 +96,7 @@ func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m inter
 	d.Set("query", customRule.Query)
 	d.Set("endpoint_type", customRule.EndpointType)
 	d.Set("priority", customRule.Priority)
+	d.Set("enabled", customRule.Enabled)
 
 	return diags
 }
@@ -106,6 +113,7 @@ func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m int
 		Query:        d.Get("query").(string),
 		EndpointType: d.Get("endpoint_type").(string),
 		Priority:     d.Get("priority").(string),
+		Enabled:      d.Get("enabled").(bool),
 	}
 
 	o, err := c.UpdateCustomRule(newCustomRule)
