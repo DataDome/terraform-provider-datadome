@@ -1,3 +1,5 @@
+.PHONY: default build build-all release-local install test testacc clean
+
 TEST?=$$(go list ./... | grep -v 'vendor')
 HOSTNAME=datadome.co
 NAMESPACE=app
