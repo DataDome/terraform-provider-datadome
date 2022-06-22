@@ -1,4 +1,3 @@
-
 module github.com/datadome/terraform-provider/datadome-client-go
 
-go 1.13
+go 1.16
