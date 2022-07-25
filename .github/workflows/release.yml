@@ -1,6 +1,6 @@
 ---
 # See https://github.com/hashicorp/terraform-provider-scaffolding/blob/main/.github/workflows/release.yml
-name: build
+name: release
 on:
   push:
     tags:
