@@ -36,7 +36,7 @@ func NewClient(host, password *string) (*Client, error) {
 }
 
 func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*HttpResponse, error) {
-	// Add apikey as a query parameter on each request for authentication
+	// Add apikey as a header on each request for authentication
 	// Add also withoutTraffic parameter to true to have better performances
 	q := req.URL.Query()
 	req.Header.Set("x-api-key", c.Token)
