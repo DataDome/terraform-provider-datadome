@@ -14,7 +14,7 @@ $ go build -o terraform-provider-datadome
 
 1. Build the provider.
 
-2. Install it.
+2. Install it (you may need to change the value of `OS_ARCH` inside Makefile).
 
 ```shell
 $ make install
