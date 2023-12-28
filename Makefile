@@ -5,8 +5,11 @@ HOSTNAME=datadome.co
 NAMESPACE=app
 NAME=datadome
 BINARY=terraform-provider-${NAME}
+# the version of the local binary that will be generated
 VERSION=0.0.1
+# select your OS here
 OS_ARCH=linux_amd64
+#OS_ARCH=win_amd64
 #OS_ARCH=darwin_amd64
 
 default: install
