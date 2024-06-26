@@ -29,7 +29,7 @@ resource "datadome_custom_rule" "new" {
 - `query` - (Required) Your query, for more information refer to the DataDome [documentation](https://docs.datadome.co/docs/syntax-guidelines)
 - `response` - (Required) The response behavior, must be one of `whitelist`, `captcha`, `block`
 - `endpoint_type` - (Optional) The endpoint on which you want your custom rule to be applied. If no endpoint type is specified, the custom rule will be applied to all endpoint types.
-- `priority` - (Optional) Your rule priority, must be one of `high`, `low`, `normal`
+- `priority` - (Optional) Your rule priority, must be one of `high`, `low`, `normal`. Defaults to `high`.
 - `enabled` - (Optional) Determines whether rule is enabled. Defaults to `true`.
 
 
