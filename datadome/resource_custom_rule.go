@@ -66,6 +66,26 @@ func resourceCustomRule() *schema.Resource {
 			"endpoint_type": {
 				Type:     schema.TypeString,
 				Optional: true,
+				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					var diags diag.Diagnostics
+					value := v.(string)
+
+					if !(value == "web" ||
+						value == "api-app-mobile" ||
+						value == "rss" ||
+						value == "api" ||
+						value == "login" ||
+						value == "submit") {
+							diag := diag.Diagnostic{
+								Severity: diag.Error,
+								Summary:  "wrong value",
+								Detail:   fmt.Sprintf("%q is not an acceptable endpoint_type", value),
+							}
+							diags = append(diags, diag)
+					}
+					return diags
+				},
+				Default: "web",
 			},
 			"enabled": {
 				Type:     schema.TypeBool,
