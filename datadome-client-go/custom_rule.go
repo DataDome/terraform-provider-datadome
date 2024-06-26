@@ -20,7 +20,6 @@ func (c *Client) GetCustomRules(ctx context.Context) ([]CustomRule, error) {
 	resp := &HttpResponse{Data: customRules}
 
 	_, err = c.doRequest(req, resp)
-
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +29,6 @@ func (c *Client) GetCustomRules(ctx context.Context) ([]CustomRule, error) {
 
 	return customRules.CustomRules, nil
 }
-
 
 // CreateCutomRule with given CustomRule parameters
 func (c *Client) CreateCustomRule(ctx context.Context, customRule CustomRule) (*ID, error) {
@@ -100,7 +98,6 @@ func (c *Client) UpdateCustomRule(ctx context.Context, customRule CustomRule) (*
 
 	return &customRule, nil
 }
-
 
 // DeleteCustomRule by its ID
 func (c *Client) DeleteCustomRule(ctx context.Context, customRule CustomRule) (*CustomRule, error) {

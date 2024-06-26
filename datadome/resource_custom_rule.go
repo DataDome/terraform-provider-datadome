@@ -76,12 +76,12 @@ func resourceCustomRule() *schema.Resource {
 						value == "api" ||
 						value == "login" ||
 						value == "submit") {
-							diag := diag.Diagnostic{
-								Severity: diag.Error,
-								Summary:  "wrong value",
-								Detail:   fmt.Sprintf("%q is not an acceptable endpoint_type", value),
-							}
-							diags = append(diags, diag)
+						diag := diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  "wrong value",
+							Detail:   fmt.Sprintf("%q is not an acceptable endpoint_type", value),
+						}
+						diags = append(diags, diag)
 					}
 					return diags
 				},

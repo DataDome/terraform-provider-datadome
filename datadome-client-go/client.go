@@ -50,7 +50,7 @@ func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*Http
 	if err != nil {
 		return nil, err
 	}
-	defer func () {
+	defer func() {
 		err = res.Body.Close()
 		if err != nil {
 			log.Printf("failed to close body: %v", err)
