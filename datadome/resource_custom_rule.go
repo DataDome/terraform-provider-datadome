@@ -34,7 +34,7 @@ func resourceCustomRule() *schema.Resource {
 				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
 					var diags diag.Diagnostics
 					value := v.(string)
-					if !(value == "whitelist" || value == "captcha" || value == "block") {
+					if !(value == "allow" || value == "captcha" || value == "block") {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",

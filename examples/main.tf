@@ -16,7 +16,7 @@ provider "datadome" {
 resource "datadome_custom_rule" "new" {
   name          = "test-terraform"
   query         = "ip: 192.168.0.1"
-  response      = "whitelist"
+  response      = "allow"
   endpoint_type = "web"
   priority      = "normal"
 }
