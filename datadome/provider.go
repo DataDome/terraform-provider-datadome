@@ -32,6 +32,7 @@ func Provider() *schema.Provider {
 	}
 }
 
+// providerConfigure is used to configure the provider with the schema's variable
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	apikey := d.Get("apikey").(string)
 

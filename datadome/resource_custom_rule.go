@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// resourceCustomRule define the CRUD operations and the schema definition for DataDome custom rules.
 func resourceCustomRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceCustomRuleCreate,
@@ -84,6 +85,7 @@ func resourceCustomRule() *schema.Resource {
 	}
 }
 
+// resourceCustomRuleCreate is used to create new custom rule
 func resourceCustomRuleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*dd.Client)
 
@@ -109,6 +111,7 @@ func resourceCustomRuleCreate(ctx context.Context, d *schema.ResourceData, m int
 	return diags
 }
 
+// resourceCustomRuleRead is used to fetch the custom rule by its ID
 func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*dd.Client)
 
@@ -148,6 +151,7 @@ func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
+// resourceCustomRuleUpdate is used to update a custom rule by its ID
 func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*dd.Client)
 
@@ -174,6 +178,7 @@ func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceCustomRuleRead(ctx, d, m)
 }
 
+// resourceCustomRuleDelete is used to delete a custom rule by its ID
 func resourceCustomRuleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*dd.Client)
 
