@@ -85,7 +85,6 @@ func resourceCustomRule() *schema.Resource {
 					}
 					return diags
 				},
-				Default: "web",
 			},
 			"enabled": {
 				Type:     schema.TypeBool,
