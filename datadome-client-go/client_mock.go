@@ -28,6 +28,10 @@ func (m *MockClient) Create(ctx context.Context, params CustomRule) (*int, error
 		return m.CreateFunc(ctx, params)
 	}
 
+	if _, exists := m.resources[params.ID]; exists {
+		return nil, fmt.Errorf("resource already exists with ID %d", params.ID)
+	}
+
 	newResource := &params
 	m.resources[newResource.ID] = newResource
 	return &newResource.ID, nil
