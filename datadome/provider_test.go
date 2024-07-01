@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -39,6 +40,53 @@ func TestProvider(t *testing.T) {
 
 func TestProvider_impl(t *testing.T) {
 	var _ *schema.Provider = Provider()
+}
+
+func TestProviderConfigure(t *testing.T) {
+	t.Run("With apiKey", func(t *testing.T) {
+		apiKey := "valid_api_key"
+		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{
+			"apikey": apiKey,
+		})
+
+		meta, diags := providerConfigure(context.Background(), rd)
+
+		assert.Empty(t, diags)
+		assert.NotNil(t, meta)
+
+		client, ok := meta.(*datadome.Client)
+		assert.True(t, ok, "meta should be of type *datadome.Client")
+		assert.Equal(t, apiKey, client.Token)
+	})
+
+	t.Run("Without apiKey", func(t *testing.T) {
+		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{})
+
+		meta, diags := providerConfigure(context.Background(), rd)
+
+		assert.Empty(t, diags)
+		assert.NotNil(t, meta)
+
+		client, ok := meta.(*datadome.Client)
+		assert.True(t, ok, "meta should be of type *datadome.Client")
+		assert.Equal(t, "", client.Token)
+	})
+
+	t.Run("With custom host", func(t *testing.T) {
+		host := "custom_host"
+		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{
+			"host": host,
+		})
+
+		meta, diags := providerConfigure(context.Background(), rd)
+
+		assert.Empty(t, diags)
+		assert.NotNil(t, meta)
+
+		client, ok := meta.(*datadome.Client)
+		assert.True(t, ok, "meta should be of type *datadome.Client")
+		assert.Equal(t, host, client.HostURL)
+	})
 }
 
 /*
@@ -261,6 +309,59 @@ func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
 			{
 				Config:      testAccCustomRuleResourceConfigWrongPriority,
 				ExpectError: regexp.MustCompile(`"wrong_priority" is not an acceptable priority`),
+			},
+		},
+	})
+}
+
+// TestAccCustomRuleResource_createAlreadyExists test the creation when a custom rule already exists with the same name
+func TestAccCustomRuleResource_createAlreadyExists(t *testing.T) {
+	mockClient := datadome.NewMockClient()
+	mockClient.CreateFunc = func(ctx context.Context, params datadome.CustomRule) (*int, error) {
+		return nil, fmt.Errorf("The rule with name: 'acc-test' already exists")
+	}
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return mockClient, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCustomRuleResourceConfig,
+				ExpectError: regexp.MustCompile(`'acc-test' already exists`),
+			},
+		},
+	})
+}
+
+// TestAccCustomRuleResource_updateAlreadyExists test the update when a custom rule already exists with the same name
+func TestAccCustomRuleResource_updateAlreadyExists(t *testing.T) {
+	mockClient := datadome.NewMockClient()
+	mockClient.UpdateFunc = func(ctx context.Context, params datadome.CustomRule) (*datadome.CustomRule, error) {
+		return nil, fmt.Errorf("Another rule with name: 'acc-test-updated' already exists")
+	}
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return mockClient, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCustomRuleResourceConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckCustomRuleResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test"),
+				),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigUpdate,
+				ExpectError: regexp.MustCompile(`'acc-test-updated' already exists`),
 			},
 		},
 	})
