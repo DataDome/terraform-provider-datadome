@@ -19,7 +19,7 @@ jobs:
       - name: Sonar analysis
         id: sonar_analysis
         # temporary tag for the action, to be released!
-        uses: DataDome/gha-commons/actions/common/sonar-analysis-action@v4.2.0
+        uses: DataDome/gha-commons/actions/common/sonar-analysis-action@v4.6.5
         with:
           application: ${{ github.event.repository.name }}
           qualityGate: false
