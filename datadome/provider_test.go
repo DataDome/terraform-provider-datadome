@@ -3,6 +3,7 @@ package datadome
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -43,11 +44,28 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func TestProviderConfigure(t *testing.T) {
-	t.Run("With apiKey", func(t *testing.T) {
+	t.Run("With apiKey (direct)", func(t *testing.T) {
 		apiKey := "valid_api_key"
 		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{
 			"apikey": apiKey,
 		})
+
+		meta, diags := providerConfigure(context.Background(), rd)
+
+		assert.Empty(t, diags)
+		assert.NotNil(t, meta)
+
+		client, ok := meta.(*datadome.Client)
+		assert.True(t, ok, "meta should be of type *datadome.Client")
+		assert.Equal(t, apiKey, client.Token)
+	})
+
+	t.Run("With apiKey (env)", func(t *testing.T) {
+		apiKey := "valid_api_key"
+		os.Setenv("DATADOME_APIKEY", apiKey)
+		defer os.Unsetenv("DATADOME_APIKEY")
+
+		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{})
 
 		meta, diags := providerConfigure(context.Background(), rd)
 
@@ -72,11 +90,28 @@ func TestProviderConfigure(t *testing.T) {
 		assert.Equal(t, "", client.Token)
 	})
 
-	t.Run("With custom host", func(t *testing.T) {
+	t.Run("With custom host (direct)", func(t *testing.T) {
 		host := "custom_host"
 		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{
 			"host": host,
 		})
+
+		meta, diags := providerConfigure(context.Background(), rd)
+
+		assert.Empty(t, diags)
+		assert.NotNil(t, meta)
+
+		client, ok := meta.(*datadome.Client)
+		assert.True(t, ok, "meta should be of type *datadome.Client")
+		assert.Equal(t, host, client.HostURL)
+	})
+
+	t.Run("With custom host (env)", func(t *testing.T) {
+		host := "custom_host"
+		os.Setenv("DATADOME_HOST", host)
+		defer os.Unsetenv("DATADOME_HOST")
+
+		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{})
 
 		meta, diags := providerConfigure(context.Background(), rd)
 
@@ -162,7 +197,7 @@ const testAccCustomRuleResourceConfigEmpty = `
 provider "datadome" {}
 `
 
-func testAccPreCheck(t *testing.T) {}
+func testAccCustomRuleResourcePreCheck(t *testing.T) {}
 
 // testAccCheckCustomRuleResourceExists check if the given resourceName exists
 func testAccCheckCustomRuleResourceExists(resourceName string) resource.TestCheckFunc {
@@ -197,7 +232,7 @@ func TestAccCustomRuleResource_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -225,7 +260,7 @@ func TestAccCustomRuleResource_update(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -261,7 +296,7 @@ func TestAccCustomRuleResource_delete(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -295,7 +330,7 @@ func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -326,7 +361,7 @@ func TestAccCustomRuleResource_createAlreadyExists(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -349,7 +384,7 @@ func TestAccCustomRuleResource_updateAlreadyExists(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
