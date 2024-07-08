@@ -62,7 +62,11 @@ func TestProviderConfigure(t *testing.T) {
 
 	t.Run("With apiKey (env)", func(t *testing.T) {
 		apiKey := "valid_api_key"
-		os.Setenv("DATADOME_APIKEY", apiKey)
+		err := os.Setenv("DATADOME_APIKEY", apiKey)
+		if err != nil {
+			t.Fatalf("fail to set DATADOME_APIKEY with value %q", apiKey)
+			return
+		}
 		defer os.Unsetenv("DATADOME_APIKEY")
 
 		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{})
@@ -108,7 +112,11 @@ func TestProviderConfigure(t *testing.T) {
 
 	t.Run("With custom host (env)", func(t *testing.T) {
 		host := "custom_host"
-		os.Setenv("DATADOME_HOST", host)
+		err := os.Setenv("DATADOME_HOST", host)
+		if err != nil {
+			t.Fatalf("fail to set DATADOME_HOST with value %q", host)
+			return
+		}
 		defer os.Unsetenv("DATADOME_HOST")
 
 		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{})
