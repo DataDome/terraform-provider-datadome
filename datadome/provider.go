@@ -8,15 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Provider of DataDome
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"host": &schema.Schema{
+			"host": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("DATADOME_HOST", nil),
 			},
-			"apikey": &schema.Schema{
+			"apikey": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
@@ -31,6 +32,7 @@ func Provider() *schema.Provider {
 	}
 }
 
+// providerConfigure is used to configure the provider with the schema's variable
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	apikey := d.Get("apikey").(string)
 

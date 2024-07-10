@@ -15,7 +15,7 @@ Creates a custom rule on DataDome dashboard
 resource "datadome_custom_rule" "new" {
   name          = "my-custom-rule"
   query         = "ip: 192.168.1.1"
-  response      = "whitelist"
+  response      = "allow"
   endpoint_type = "web"
   priority      = "normal"
   enabled       = true
@@ -27,9 +27,9 @@ resource "datadome_custom_rule" "new" {
 
 - `name` - (Required) Name of your custom rule. You cannot have multiple rules with the same name.
 - `query` - (Required) Your query, for more information refer to the DataDome [documentation](https://docs.datadome.co/docs/syntax-guidelines)
-- `response` - (Required) The response behavior, must be one of `whitelist`, `captcha`, `block`
+- `response` - (Required) The response behavior, must be one of `allow`, `captcha`, `block`
 - `endpoint_type` - (Optional) The endpoint on which you want your custom rule to be applied. If no endpoint type is specified, the custom rule will be applied to all endpoint types.
-- `priority` - (Optional) Your rule priority, must be one of `high`, `low`, `normal`
+- `priority` - (Optional) Your rule priority, must be one of `high`, `low`, `normal`. Defaults to `high`.
 - `enabled` - (Optional) Determines whether rule is enabled. Defaults to `true`.
 
 

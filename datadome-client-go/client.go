@@ -3,25 +3,27 @@ package datadome
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
 )
 
-// Default datadome dashboard URL
-const HostURL string = "https://customer-api.datadome.co/1.0/protection"
+// HOST_URL default datadome dashboard URL
+const HOST_URL string = "https://customer-api.datadome.co/1.1/protection"
 
+// Client to perform request on DataDome's API
 type Client struct {
 	HostURL    string
 	HTTPClient *http.Client
 	Token      string
 }
 
+// NewClient is instantiate with given host and password parameters
 func NewClient(host, password *string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		HostURL:    HostURL,
+		HostURL:    HOST_URL,
 	}
 
 	if host != nil {
@@ -35,6 +37,7 @@ func NewClient(host, password *string) (*Client, error) {
 	return &c, nil
 }
 
+// doRequest on the DataDome API with given http.Request and HttpResponse
 func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*HttpResponse, error) {
 	// Add apikey as a query parameter on each request for authentication
 	// Add also withoutTraffic parameter to true to have better performances
@@ -47,9 +50,14 @@ func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*Http
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		err = res.Body.Close()
+		if err != nil {
+			log.Printf("failed to close body: %v", err)
+		}
+	}()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +73,7 @@ func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*Http
 		return nil, err
 	}
 
-	if res.StatusCode != http.StatusOK || httpResponse.Status != 200 {
+	if httpResponse.Status != 200 {
 		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, httpResponse.Errors)
 	}
 

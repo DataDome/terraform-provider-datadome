@@ -1,10 +1,9 @@
 package main
 
 import (
+	datadome "github.com/datadome/terraform-provider/datadome"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-
-	datadome "github.com/datadome/terraform-provider/datadome"
 )
 
 func main() {

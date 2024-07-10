@@ -1,37 +1,35 @@
 # DataDome Terraform Provider
 
-This Terraform Provider aims at creating custom rules using the [Management API](https://docs.datadome.co/reference/get_1-0-protection-custom-rules).
+This Terraform Provider aims at creating custom rules using the [Management API](https://docs.datadome.co/reference/get_1-1-protection-custom-rules).
 
 ## Build the provider
 
 Run the following command to build the provider
 
 ```shell
-$ go build -o terraform-provider-datadome
+$ make build
 ```
 
 ## Test a sample configuration manually
 
 1. Build the provider.
 
-2. Inside `Makefile`, uncomment the value of `OS_ARCH` inside Makefile depending on your OS.
-
-3. Install the provider.
+2. Install the provider.
 
 ```shell
 $ make install
 ```
 
-4. Navigate to the `examples` directory. 
+3. Navigate to the `examples` directory. 
 
 ```shell
 $ cd examples
 ```
 
-5. Inside `main.tf`, set your Management API Key that you can find in your dashboard. If you don't have one, you can generate it.
+4. Inside `main.tf`, set your Management API Key that you can find in your dashboard. If you don't have one, you can generate it.
 
 
-6. Run the following command to initialize the workspace and apply the sample configuration.
+5. Run the following command to initialize the workspace and apply the sample configuration.
 
 ```shell
 $ terraform init && terraform apply
