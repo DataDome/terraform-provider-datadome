@@ -28,25 +28,15 @@ $ cd examples
 
 4. Inside `main.tf`, set your Management API Key that you can find in your dashboard. If you don't have one, you can generate it.
 
-
 5. Run the following command to initialize the workspace and apply the sample configuration.
 
 ```shell
 $ terraform init && terraform apply
 ```
 
-If you have a mac M1, you may need to run these before:
+6. Terraform will ask you if you want to perform these actions: enter yes.
 
-```shell
-$ brew uninstall terraform
-$ brew install tfenv
-$ TFENV_ARCH=amd64 tfenv install 1.3.3
-$ tfenv use 1.3.3
-```
-
-7. Terraform will ask you if you want to perform these actions: enter yes.
-
-8. Congrats! You created a new custom rule that you can see in your dashboard.
+7. Congrats! You created a new custom rule that you can see in your dashboard.
 
 ## Make a release
 
