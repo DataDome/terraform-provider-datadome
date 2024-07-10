@@ -41,10 +41,10 @@ func NewClient(host, password *string) (*Client, error) {
 
 // doRequest on the DataDome API with given http.Request and HttpResponse
 func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*HttpResponse, error) {
-	// Add apikey as a query parameter on each request for authentication
+	// Add apikey as a header on each request for authentication
 	// Add also withoutTraffic parameter to true to have better performances
 	q := req.URL.Query()
-	q.Add("apikey", c.Token)
+	req.Header.Set("x-api-key", c.Token)
 	q.Add("withoutTraffic", "true")
 	req.URL.RawQuery = q.Encode()
 
