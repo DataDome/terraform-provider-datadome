@@ -34,7 +34,7 @@ func resourceCustomRule() *schema.Resource {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("the name value should not be blank"),
+							Detail:   "the name value should not be blank",
 						}
 						diags = append(diags, diag)
 					}
