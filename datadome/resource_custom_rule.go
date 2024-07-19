@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/datadome/terraform-provider/common"
 	dd "github.com/datadome/terraform-provider/datadome-client-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -106,7 +107,7 @@ func resourceCustomRule() *schema.Resource {
 
 // resourceCustomRuleCreate is used to create new custom rule
 func resourceCustomRuleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*dd.Client)
+	c := m.(common.API[dd.CustomRule])
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -120,23 +121,23 @@ func resourceCustomRuleCreate(ctx context.Context, d *schema.ResourceData, m int
 		Enabled:      d.Get("enabled").(bool),
 	}
 
-	o, err := c.CreateCustomRule(ctx, newCustomRule)
+	id, err := c.Create(ctx, newCustomRule)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(strconv.Itoa(o.ID))
+	d.SetId(strconv.Itoa(*id))
 
 	return diags
 }
 
 // resourceCustomRuleRead is used to fetch the custom rule by its ID
 func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*dd.Client)
+	c := m.(common.API[dd.CustomRule])
 
 	var diags diag.Diagnostics
 
-	o, err := c.GetCustomRules(ctx)
+	o, err := c.Read(ctx)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -172,7 +173,7 @@ func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m inter
 
 // resourceCustomRuleUpdate is used to update a custom rule by its ID
 func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*dd.Client)
+	c := m.(common.API[dd.CustomRule])
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -189,7 +190,7 @@ func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m int
 		Enabled:      d.Get("enabled").(bool),
 	}
 
-	o, err := c.UpdateCustomRule(ctx, newCustomRule)
+	o, err := c.Update(ctx, newCustomRule)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -199,7 +200,7 @@ func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 // resourceCustomRuleDelete is used to delete a custom rule by its ID
 func resourceCustomRuleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*dd.Client)
+	c := m.(common.API[dd.CustomRule])
 
 	var diags diag.Diagnostics
 
@@ -208,11 +209,7 @@ func resourceCustomRuleDelete(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	customRuleToDelete := dd.CustomRule{
-		ID: id,
-	}
-
-	_, err = c.DeleteCustomRule(ctx, customRuleToDelete)
+	err = c.Delete(ctx, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}

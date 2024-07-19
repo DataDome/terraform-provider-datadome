@@ -1,17 +1,14 @@
 ---
-name: golangci-lint
+name: lint
 on:
-  push:
-    branches:
-      - master
-  pull_request:
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
   golangci:
-    name: lint
+    name: golangci-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,3 +19,13 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.59
+  staticcheck:
+    name: staticcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: dominikh/staticcheck-action@v1.3.1
+        with:
+          version: "2023.1.7"

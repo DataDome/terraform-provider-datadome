@@ -44,6 +44,7 @@ ifeq (, $(shell which golangci-lint))
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
 endif
 	golangci-lint run ./main.go
+	golangci-lint run ./common/*.go
 	golangci-lint run ./datadome/*.go
 	golangci-lint run ./datadome-client-go/*.go
 
