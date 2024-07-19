@@ -149,6 +149,45 @@ resource "datadome_custom_rule" "accConfig" {
 }
 `
 
+const testAccCustomRuleResourceConfigEmptyName = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = ""
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+  enabled		= true
+}
+`
+
+const testAccCustomRuleResourceConfigBlankName = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "           "
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+  enabled		= true
+}
+`
+
+const testAccCustomRuleResourceConfigEmptyQuery = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = ""
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+  enabled		= true
+}
+`
+
 const testAccCustomRuleResourceConfigWrongResponse = `
 provider "datadome" {}
 
@@ -352,6 +391,18 @@ func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
 			{
 				Config:      testAccCustomRuleResourceConfigWrongPriority,
 				ExpectError: regexp.MustCompile(`"wrong_priority" is not an acceptable priority`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigEmptyName,
+				ExpectError: regexp.MustCompile(`the name value should not be blank`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigBlankName,
+				ExpectError: regexp.MustCompile(`the name value should not be blank`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigEmptyQuery,
+				ExpectError: regexp.MustCompile(`expected "query" to not be an empty string`),
 			},
 		},
 	})

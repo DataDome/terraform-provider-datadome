@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/datadome/terraform-provider/common"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 // resourceCustomRule define the CRUD operations and the schema definition for DataDome custom rules.
@@ -24,10 +26,25 @@ func resourceCustomRule() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					var diags diag.Diagnostics
+					value := v.(string)
+					trimedValue := strings.TrimSpace(value)
+					if trimedValue == "" {
+						diag := diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  "wrong value",
+							Detail:   fmt.Sprintf("the name value should not be blank"),
+						}
+						diags = append(diags, diag)
+					}
+					return diags
+				},
 			},
 			"query": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"response": {
 				Type:     schema.TypeString,
