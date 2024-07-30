@@ -26,7 +26,7 @@ $ make install
 $ cd examples
 ```
 
-4. Inside `main.tf`, set your Management API Key that you can find in [your dashboard](https://app.datadome.co/dashboard/management/integrations). If you don't have one, you can generate it.
+4. Inside `main.tf`, set your Management API Key that you can find in [your dashboard](https://app.datadome.co/dashboard/management/integrations). If you don't have one, please contact DataDome support to generate one.
 
 5. Run the following command to initialize the workspace and apply the sample configuration.
 

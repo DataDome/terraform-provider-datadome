@@ -23,5 +23,5 @@ provider "datadome" {
 
 ### Optional
 
-- **apikey** (String, Optional) Management API key to authenticate to DataDome API. You can find it in [your dashboard](https://app.datadome.co/dashboard/management/integrations).
+- **apikey** (String, Optional) Management API key to authenticate to DataDome API. You can find it in [your dashboard](https://app.datadome.co/dashboard/management/integrations). If you don't have one, please contact DataDome support to generate one
 - **host** (String, Optional) Host of the DataDome custom rules API
