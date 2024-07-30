@@ -7,7 +7,7 @@ NAME=datadome
 BINARY=terraform-provider-${NAME}
 # the version of the local binary that will be generated
 VERSION=0.0.1
-OS_ARCH=`uname -s | tr A-Z a-z`_`uname -m | tr A-Z a-z`
+OS_ARCH=`go env GOOS`_`go env GOARCH`
 
 default: install
 
