@@ -1,0 +1,29 @@
+---
+name: test
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-test:
+    name: unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: run unit tests
+        run: make test
+  acc-test:
+    name: acceptance tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: run acceptance tests
+        run: make testacc

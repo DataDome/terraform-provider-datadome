@@ -1,12 +1,13 @@
-.PHONY: default build build-all release-local install test testacc clean
+.PHONY: default build build-all release-local install lint test testacc clean
 
 TEST?=$$(go list ./... | grep -v 'vendor')
 HOSTNAME=datadome.co
 NAMESPACE=app
 NAME=datadome
 BINARY=terraform-provider-${NAME}
+# the version of the local binary that will be generated
 VERSION=0.0.1
-OS_ARCH=linux_amd64
+OS_ARCH=`go env GOOS`_`go env GOARCH`
 
 default: install
 
@@ -36,7 +37,16 @@ release-local:
 
 install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${OS_ARCH}
+	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+
+lint:
+ifeq (, $(shell which golangci-lint))
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
+endif
+	golangci-lint run ./main.go
+	golangci-lint run ./common/*.go
+	golangci-lint run ./datadome/*.go
+	golangci-lint run ./datadome-client-go/*.go
 
 test: 
 	go test -i $(TEST) || exit 1
