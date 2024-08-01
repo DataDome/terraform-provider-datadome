@@ -6,7 +6,7 @@ BREAKING CHANGES:
 
 - Change `whitelist` response to `allow`
 
-NOTE:
+ENHANCEMENTS:
 
 - Upgrade go version and dependencies
 - Improve error handling
@@ -20,6 +20,6 @@ BUG FIXES:
 
 - Fix the authentication to DataDome API from query param to header
 
-NOTE:
+ENHANCEMENTS:
 
 - Upgrade go version and dependencies
