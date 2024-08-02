@@ -2,24 +2,24 @@
 
 ## 2.0.0 (2024-31-07)
 
-BREAKING CHANGES:
+### BREAKING CHANGES:
 
 - Change `whitelist` response to `allow`
 
-ENHANCEMENTS:
+### ENHANCEMENTS:
 
-- Upgrade go version and dependencies
+- Upgrade `go` version and dependencies
 - Improve error handling
-- Improve godoc for each functions and constants
+- Improve `godoc` for each functions and constants
 - Update CI to include linting and static code checking
 - Add unit and acceptance tests
 
 ## 1.1.0 (2023-12-15)
 
-BUG FIXES:
+### BUG FIXES:
 
 - Fix the authentication to DataDome API from query param to header
 
-ENHANCEMENTS:
+### ENHANCEMENTS:
 
-- Upgrade go version and dependencies
+- Upgrade `go` version and dependencies
