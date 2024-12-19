@@ -1,6 +1,12 @@
 # DataDome Terraform Provider
 
-## 2.0.0 (2024-31-07)
+## 2.0.1 (2024-12-18)
+
+### BUG FIXES:
+
+- Update dependencies to fix vulnerabilities
+
+## 2.0.0 (2024-07-31)
 
 ### BREAKING CHANGES:
 
