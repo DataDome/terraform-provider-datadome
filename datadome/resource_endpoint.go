@@ -3,10 +3,8 @@ package datadome
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
-	dd "github.com/datadome/terraform-provider/datadome-client-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -124,39 +122,39 @@ func resourceEndpoint() *schema.Resource {
 // resourceCustomRuleCreate is used to create new custom rule
 func resourceEndpointCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*ProviderConfig)
-	c := config.ClientEndpoint
+	_ = config.ClientEndpoint
 
 	var diags diag.Diagnostics
 
-	description := d.Get("description").(string)
-	positionBefore := d.Get("positionBefore").(string)
-	domain := d.Get("domain").(string)
-	pathInclusion := d.Get("pathInclusion").(string)
-	pathExclusion := d.Get("pathExclusion").(string)
-	userAgentInclusion := d.Get("userAgentInclusion").(string)
+	// description := d.Get("description").(string)
+	// positionBefore := d.Get("positionBefore").(string)
+	// domain := d.Get("domain").(string)
+	// pathInclusion := d.Get("pathInclusion").(string)
+	// pathExclusion := d.Get("pathExclusion").(string)
+	// userAgentInclusion := d.Get("userAgentInclusion").(string)
 
-	newEndpoint := dd.Endpoint{
-		Name:               d.Get("name").(string),
-		Description:        &description,
-		PositionBefore:     &positionBefore,
-		TrafficUsage:       d.Get("trafficUsage").(string),
-		Source:             d.Get("source").(string),
-		CookieSameSite:     d.Get("cookieSameSite").(string),
-		Domain:             &domain,
-		PathInclusion:      &pathInclusion,
-		PathExclusion:      &pathExclusion,
-		UserAgentInclusion: &userAgentInclusion,
-		ResponseFormat:     d.Get("responseFormat").(string),
-		DetectionEnabled:   d.Get("detectionEnabled").(bool),
-		ProtectionEnabled:  d.Get("protectionEnabled").(bool),
-	}
+	// newEndpoint := dd.Endpoint{
+	// 	Name:               d.Get("name").(string),
+	// 	Description:        &description,
+	// 	PositionBefore:     &positionBefore,
+	// 	TrafficUsage:       d.Get("trafficUsage").(string),
+	// 	Source:             d.Get("source").(string),
+	// 	CookieSameSite:     d.Get("cookieSameSite").(string),
+	// 	Domain:             &domain,
+	// 	PathInclusion:      &pathInclusion,
+	// 	PathExclusion:      &pathExclusion,
+	// 	UserAgentInclusion: &userAgentInclusion,
+	// 	ResponseFormat:     d.Get("responseFormat").(string),
+	// 	DetectionEnabled:   d.Get("detectionEnabled").(bool),
+	// 	ProtectionEnabled:  d.Get("protectionEnabled").(bool),
+	// }
 
-	id, err := c.Create(ctx, newEndpoint)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// id, err := c.Create(ctx, newEndpoint)
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
-	d.SetId(strconv.Itoa(*id))
+	// d.SetId(strconv.Itoa(*id))
 
 	return diags
 }
@@ -164,59 +162,59 @@ func resourceEndpointCreate(ctx context.Context, d *schema.ResourceData, m inter
 // resourceCustomRuleRead is used to fetch the custom rule by its ID
 func resourceEndpointRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*ProviderConfig)
-	c := config.ClientEndpoint
+	_ = config.ClientEndpoint
 
 	var diags diag.Diagnostics
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// id, err := strconv.Atoi(d.Id())
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
-	endpoint, err := c.Read(ctx, id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// endpoint, err := c.Read(ctx, id)
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
-	if err = d.Set("name", endpoint.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("description", endpoint.Description); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("positionBefore", endpoint.PositionBefore); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("trafficUsage", endpoint.TrafficUsage); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("source", endpoint.Source); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("cookieSameSite", endpoint.CookieSameSite); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("domain", endpoint.Domain); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("pathInclusion", endpoint.PathInclusion); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("pathExclusion", endpoint.PathExclusion); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("userAgentInclusion", endpoint.UserAgentInclusion); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("responseFormat", endpoint.ResponseFormat); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("detectionEnabled", endpoint.DetectionEnabled); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("protectionEnabled", endpoint.ProtectionEnabled); err != nil {
-		return diag.FromErr(err)
-	}
+	// if err = d.Set("name", endpoint.Name); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("description", endpoint.Description); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("positionBefore", endpoint.PositionBefore); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("trafficUsage", endpoint.TrafficUsage); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("source", endpoint.Source); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("cookieSameSite", endpoint.CookieSameSite); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("domain", endpoint.Domain); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("pathInclusion", endpoint.PathInclusion); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("pathExclusion", endpoint.PathExclusion); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("userAgentInclusion", endpoint.UserAgentInclusion); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("responseFormat", endpoint.ResponseFormat); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("detectionEnabled", endpoint.DetectionEnabled); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err = d.Set("protectionEnabled", endpoint.ProtectionEnabled); err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
 	return diags
 }
@@ -224,62 +222,63 @@ func resourceEndpointRead(ctx context.Context, d *schema.ResourceData, m interfa
 // resourceCustomRuleUpdate is used to update a custom rule by its ID
 func resourceEndpointUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*ProviderConfig)
-	c := config.ClientEndpoint
+	_ = config.ClientEndpoint
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// id, err := strconv.Atoi(d.Id())
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
-	description := d.Get("description").(string)
-	positionBefore := d.Get("positionBefore").(string)
-	domain := d.Get("domain").(string)
-	pathInclusion := d.Get("pathInclusion").(string)
-	pathExclusion := d.Get("pathExclusion").(string)
-	userAgentInclusion := d.Get("userAgentInclusion").(string)
+	// description := d.Get("description").(string)
+	// positionBefore := d.Get("positionBefore").(string)
+	// domain := d.Get("domain").(string)
+	// pathInclusion := d.Get("pathInclusion").(string)
+	// pathExclusion := d.Get("pathExclusion").(string)
+	// userAgentInclusion := d.Get("userAgentInclusion").(string)
 
-	newEndpoint := dd.Endpoint{
-		ID:                 id,
-		Name:               d.Get("name").(string),
-		Description:        &description,
-		PositionBefore:     &positionBefore,
-		TrafficUsage:       d.Get("trafficUsage").(string),
-		Source:             d.Get("source").(string),
-		CookieSameSite:     d.Get("cookieSameSite").(string),
-		Domain:             &domain,
-		PathInclusion:      &pathInclusion,
-		PathExclusion:      &pathExclusion,
-		UserAgentInclusion: &userAgentInclusion,
-		ResponseFormat:     d.Get("responseFormat").(string),
-		DetectionEnabled:   d.Get("detectionEnabled").(bool),
-		ProtectionEnabled:  d.Get("protectionEnabled").(bool),
-	}
+	// newEndpoint := dd.Endpoint{
+	// 	ID:                 id,
+	// 	Name:               d.Get("name").(string),
+	// 	Description:        &description,
+	// 	PositionBefore:     &positionBefore,
+	// 	TrafficUsage:       d.Get("trafficUsage").(string),
+	// 	Source:             d.Get("source").(string),
+	// 	CookieSameSite:     d.Get("cookieSameSite").(string),
+	// 	Domain:             &domain,
+	// 	PathInclusion:      &pathInclusion,
+	// 	PathExclusion:      &pathExclusion,
+	// 	UserAgentInclusion: &userAgentInclusion,
+	// 	ResponseFormat:     d.Get("responseFormat").(string),
+	// 	DetectionEnabled:   d.Get("detectionEnabled").(bool),
+	// 	ProtectionEnabled:  d.Get("protectionEnabled").(bool),
+	// }
 
-	o, err := c.Update(ctx, newEndpoint)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	d.SetId(strconv.Itoa(o.ID))
+	// o, err := c.Update(ctx, newEndpoint)
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// d.SetId(strconv.Itoa(o.ID))
 
-	return resourceEndpointRead(ctx, d, m)
+	// return resourceEndpointRead(ctx, d, m)
+	return nil
 }
 
 // resourceCustomRuleDelete is used to delete a custom rule by its ID
 func resourceEndpointDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*ProviderConfig)
-	c := config.ClientEndpoint
+	_ = config.ClientEndpoint
 
 	var diags diag.Diagnostics
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// id, err := strconv.Atoi(d.Id())
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
-	err = c.Delete(ctx, id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// err = c.Delete(ctx, id)
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
 	return diags
 }
