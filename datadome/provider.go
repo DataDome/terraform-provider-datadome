@@ -3,10 +3,16 @@ package datadome
 import (
 	"context"
 
+	"github.com/datadome/terraform-provider/common"
 	"github.com/datadome/terraform-provider/datadome-client-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+type ProviderConfig struct {
+	ClientCustomRule common.API[datadome.CustomRule]
+	ClientEndpoint   common.API[datadome.Endpoint]
+}
 
 // Provider of DataDome
 func Provider() *schema.Provider {
@@ -26,6 +32,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"datadome_custom_rule": resourceCustomRule(),
+			"datadome_endpoint":    resourceEndpoint(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
@@ -48,29 +55,57 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	var diags diag.Diagnostics
 
 	if apikey != "" {
-		c, err := datadome.NewClient(host, &apikey)
+		clientCustomRule, err := datadome.NewClientCustomRules(host, &apikey)
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
-				Summary:  "Unable to create DataDome client",
+				Summary:  "Unable to create DataDome client for custom rule management",
 				Detail:   "Unable to authenticate user for authenticated DataDome client",
 			})
 
 			return nil, diags
 		}
 
-		return c, diags
+		clientEndpoint, err := datadome.NewClientEndpoint(host, &apikey)
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Unable to create DataDome client for endpoint management",
+				Detail:   "Unable to authenticate user for authenticated DataDome client",
+			})
+
+			return nil, diags
+		}
+
+		return &ProviderConfig{
+			ClientCustomRule: clientCustomRule,
+			ClientEndpoint:   clientEndpoint,
+		}, diags
 	}
 
-	c, err := datadome.NewClient(host, nil)
+	clientCustomRule, err := datadome.NewClientCustomRules(host, nil)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "Unable to create DataDome client",
+			Summary:  "Unable to create DataDome client for custom rule management",
 			Detail:   "Unable to create anonymous DataDome client, please provide an api key",
 		})
 		return nil, diags
 	}
 
-	return c, diags
+	clientEndpoint, err := datadome.NewClientEndpoint(host, nil)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to create DataDome client for endpoint management",
+			Detail:   "Unable to create anonymous DataDome client, please provide an api key",
+		})
+
+		return nil, diags
+	}
+
+	return &ProviderConfig{
+		ClientCustomRule: clientCustomRule,
+		ClientEndpoint:   clientEndpoint,
+	}, diags
 }

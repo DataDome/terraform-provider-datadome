@@ -10,7 +10,7 @@ type HttpResponse struct {
 
 // HttpRequest with the CustomRule inside
 type HttpRequest struct {
-	Data CustomRule `json:"data"`
+	Data interface{} `json:"data"`
 }
 
 // Error structure returned in case of HTTP error
@@ -38,4 +38,22 @@ type CustomRule struct {
 	EndpointType string `json:"endpoint_type"`
 	Priority     string `json:"rule_priority"`
 	Enabled      bool   `json:"rule_enabled"`
+}
+
+// Endpoint structure containing the information of an endpoint
+type Endpoint struct {
+	ID                 int     `json:"id"`
+	Name               string  `json:"name"`
+	Description        *string `json:"description,omitempty"`
+	PositionBefore     *string `json:"positionBefore,omitempty"`
+	TrafficUsage       string  `json:"trafficUsage"`
+	Source             string  `json:"source"`
+	CookieSameSite     string  `json:"cookieSameSite"`
+	Domain             *string `json:"domain,omitempty"`
+	PathInclusion      *string `json:"pathInclusion,omitempty"`
+	PathExclusion      *string `json:"pathExclusion,omitempty"`
+	UserAgentInclusion *string `json:"userAgentInclusion,omitempty"`
+	ResponseFormat     string  `json:"responseFormat"`
+	DetectionEnabled   bool    `json:"detectionEnabled"`
+	ProtectionEnabled  bool    `json:"protectionEnabled"`
 }

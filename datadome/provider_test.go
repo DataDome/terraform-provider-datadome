@@ -55,9 +55,14 @@ func TestProviderConfigure(t *testing.T) {
 		assert.Empty(t, diags)
 		assert.NotNil(t, meta)
 
-		client, ok := meta.(*datadome.Client)
-		assert.True(t, ok, "meta should be of type *datadome.Client")
-		assert.Equal(t, apiKey, client.Token)
+		config, ok := meta.(*ProviderConfig)
+		assert.True(t, ok, "meta should be of type *ProviderConfig")
+		assert.NotNil(t, config.ClientCustomRule)
+		assert.NotNil(t, config.ClientEndpoint)
+		clientCustomRule := config.ClientCustomRule.(*datadome.ClientCustomRule)
+		assert.Equal(t, apiKey, clientCustomRule.Token)
+		clientEndpoint := config.ClientEndpoint.(*datadome.ClientEndpoint)
+		assert.Equal(t, apiKey, clientEndpoint.Token)
 	})
 
 	t.Run("With apiKey (env)", func(t *testing.T) {
@@ -76,9 +81,14 @@ func TestProviderConfigure(t *testing.T) {
 		assert.Empty(t, diags)
 		assert.NotNil(t, meta)
 
-		client, ok := meta.(*datadome.Client)
-		assert.True(t, ok, "meta should be of type *datadome.Client")
-		assert.Equal(t, apiKey, client.Token)
+		config, ok := meta.(*ProviderConfig)
+		assert.True(t, ok, "meta should be of type *ProviderConfig")
+		assert.NotNil(t, config.ClientCustomRule)
+		assert.NotNil(t, config.ClientEndpoint)
+		clientCustomRule := config.ClientCustomRule.(*datadome.ClientCustomRule)
+		assert.Equal(t, apiKey, clientCustomRule.Token)
+		clientEndpoint := config.ClientEndpoint.(*datadome.ClientEndpoint)
+		assert.Equal(t, apiKey, clientEndpoint.Token)
 	})
 
 	t.Run("Without apiKey", func(t *testing.T) {
@@ -89,9 +99,14 @@ func TestProviderConfigure(t *testing.T) {
 		assert.Empty(t, diags)
 		assert.NotNil(t, meta)
 
-		client, ok := meta.(*datadome.Client)
-		assert.True(t, ok, "meta should be of type *datadome.Client")
-		assert.Equal(t, "", client.Token)
+		config, ok := meta.(*ProviderConfig)
+		assert.True(t, ok, "meta should be of type *ProviderConfig")
+		assert.NotNil(t, config.ClientCustomRule)
+		assert.NotNil(t, config.ClientEndpoint)
+		clientCustomRule := config.ClientCustomRule.(*datadome.ClientCustomRule)
+		assert.Equal(t, "", clientCustomRule.Token)
+		clientEndpoint := config.ClientEndpoint.(*datadome.ClientEndpoint)
+		assert.Equal(t, "", clientEndpoint.Token)
 	})
 
 	t.Run("With custom host (direct)", func(t *testing.T) {
@@ -105,9 +120,14 @@ func TestProviderConfigure(t *testing.T) {
 		assert.Empty(t, diags)
 		assert.NotNil(t, meta)
 
-		client, ok := meta.(*datadome.Client)
-		assert.True(t, ok, "meta should be of type *datadome.Client")
-		assert.Equal(t, host, client.HostURL)
+		config, ok := meta.(*ProviderConfig)
+		assert.True(t, ok, "meta should be of type *ProviderConfig")
+		assert.NotNil(t, config.ClientCustomRule)
+		assert.NotNil(t, config.ClientEndpoint)
+		clientCustomRule := config.ClientCustomRule.(*datadome.ClientCustomRule)
+		assert.Equal(t, host, clientCustomRule.HostURL)
+		clientEndpoint := config.ClientEndpoint.(*datadome.ClientEndpoint)
+		assert.Equal(t, host, clientEndpoint.HostURL)
 	})
 
 	t.Run("With custom host (env)", func(t *testing.T) {
@@ -126,9 +146,14 @@ func TestProviderConfigure(t *testing.T) {
 		assert.Empty(t, diags)
 		assert.NotNil(t, meta)
 
-		client, ok := meta.(*datadome.Client)
-		assert.True(t, ok, "meta should be of type *datadome.Client")
-		assert.Equal(t, host, client.HostURL)
+		config, ok := meta.(*ProviderConfig)
+		assert.True(t, ok, "meta should be of type *ProviderConfig")
+		assert.NotNil(t, config.ClientCustomRule)
+		assert.NotNil(t, config.ClientEndpoint)
+		clientCustomRule := config.ClientCustomRule.(*datadome.ClientCustomRule)
+		assert.Equal(t, host, clientCustomRule.HostURL)
+		clientEndpoint := config.ClientEndpoint.(*datadome.ClientEndpoint)
+		assert.Equal(t, host, clientEndpoint.HostURL)
 	})
 }
 
@@ -272,10 +297,12 @@ func testAccCheckCustomRuleResourceDoesNotExists(resourceName string) resource.T
 
 // TestAccCustomRuleResource_basic test the creation and the read of a new custom rule
 func TestAccCustomRuleResource_basic(t *testing.T) {
-	mockClient := datadome.NewMockClient()
+	mockClient := datadome.NewMockClientCustomRule()
 
 	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		return mockClient, nil
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -300,10 +327,12 @@ func TestAccCustomRuleResource_basic(t *testing.T) {
 
 // TestAccCustomRuleResource_update test the creation of a new custom rule and update it
 func TestAccCustomRuleResource_update(t *testing.T) {
-	mockClient := datadome.NewMockClient()
+	mockClient := datadome.NewMockClientCustomRule()
 
 	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		return mockClient, nil
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -336,10 +365,12 @@ func TestAccCustomRuleResource_update(t *testing.T) {
 
 // TestAccCustomRuleResource_delete test the creation of a new custom rule and delete it
 func TestAccCustomRuleResource_delete(t *testing.T) {
-	mockClient := datadome.NewMockClient()
+	mockClient := datadome.NewMockClientCustomRule()
 
 	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		return mockClient, nil
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -370,10 +401,12 @@ func TestAccCustomRuleResource_delete(t *testing.T) {
 
 // TestAccCustomRuleResource_wrongParameters test the creation with wrong parameters (i.e. response, endpoint, and priority)
 func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
-	mockClient := datadome.NewMockClient()
+	mockClient := datadome.NewMockClientCustomRule()
 
 	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		return mockClient, nil
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -410,13 +443,15 @@ func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
 
 // TestAccCustomRuleResource_createAlreadyExists test the creation when a custom rule already exists with the same name
 func TestAccCustomRuleResource_createAlreadyExists(t *testing.T) {
-	mockClient := datadome.NewMockClient()
+	mockClient := datadome.NewMockClientCustomRule()
 	mockClient.CreateFunc = func(ctx context.Context, params datadome.CustomRule) (*int, error) {
 		return nil, fmt.Errorf("The rule with name: 'acc-test' already exists")
 	}
 
 	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		return mockClient, nil
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -433,13 +468,15 @@ func TestAccCustomRuleResource_createAlreadyExists(t *testing.T) {
 
 // TestAccCustomRuleResource_updateAlreadyExists test the update when a custom rule already exists with the same name
 func TestAccCustomRuleResource_updateAlreadyExists(t *testing.T) {
-	mockClient := datadome.NewMockClient()
+	mockClient := datadome.NewMockClientCustomRule()
 	mockClient.UpdateFunc = func(ctx context.Context, params datadome.CustomRule) (*datadome.CustomRule, error) {
 		return nil, fmt.Errorf("Another rule with name: 'acc-test-updated' already exists")
 	}
 
 	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		return mockClient, nil
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
 	}
 
 	resource.Test(t, resource.TestCase{
