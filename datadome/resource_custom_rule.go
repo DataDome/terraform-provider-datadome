@@ -198,7 +198,7 @@ func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	newCustomRule := dd.CustomRule{
-		ID:           id,
+		ID:           &id,
 		Name:         d.Get("name").(string),
 		Response:     d.Get("response").(string),
 		Query:        d.Get("query").(string),
@@ -211,7 +211,7 @@ func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(strconv.Itoa(o.ID))
+	d.SetId(strconv.Itoa(*o.ID))
 	return resourceCustomRuleRead(ctx, d, m)
 }
 

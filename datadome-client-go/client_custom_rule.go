@@ -102,7 +102,7 @@ func (c *ClientCustomRule) Read(ctx context.Context, id int) (*CustomRule, error
 
 	customRule := &CustomRule{}
 	for _, v := range customRules.CustomRules {
-		if v.ID == id {
+		if *v.ID == id {
 			customRule = &v
 		}
 	}

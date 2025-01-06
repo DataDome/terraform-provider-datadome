@@ -40,17 +40,13 @@ func NewClientEndpoint(host, password *string) (*ClientEndpoint, error) {
 }
 
 // doRequest on the DataDome API with given http.Request and HttpResponse
-func (c *ClientEndpoint) doRequest(req *http.Request, httpResponse *HttpResponse) (*HttpResponse, error) {
+func (c *ClientEndpoint) doRequest(req *http.Request, endpoint *Endpoint) error {
 	// Add apikey as a header on each request for authentication
-	// Add also withoutTraffic parameter to true to have better performances
-	q := req.URL.Query()
 	req.Header.Set("x-api-key", c.Token)
-	q.Add("withoutTraffic", "true")
-	req.URL.RawQuery = q.Encode()
 
 	res, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer func() {
 		err = res.Body.Close()
@@ -61,54 +57,45 @@ func (c *ClientEndpoint) doRequest(req *http.Request, httpResponse *HttpResponse
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
 	}
 
 	log.Printf("[DEBUG] %s\n", body)
 
-	err = json.Unmarshal(body, httpResponse)
-	if err != nil {
-		return nil, err
+	if endpoint != nil {
+		err = json.Unmarshal(body, endpoint)
+		if err != nil {
+			return err
+		}
 	}
 
-	if httpResponse.Status < 200 || httpResponse.Status > 299 {
-		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, httpResponse.Errors)
-	}
-
-	return httpResponse, err
+	return err
 }
 
 // Read endpoint information by its ID from the API management
-func (c *ClientEndpoint) Read(ctx context.Context, id int) (*Endpoint, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/%d", c.HostURL, id), nil)
+func (c *ClientEndpoint) Read(ctx context.Context, id string) (*Endpoint, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/%s", c.HostURL, id), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := &Endpoint{}
-	resp := &HttpResponse{Data: endpoint}
 
-	_, err = c.doRequest(req, resp)
+	err = c.doRequest(req, endpoint)
 	if err != nil {
 		return nil, err
-	}
-	if resp.Status != 200 {
-		return nil, fmt.Errorf("response status is %d", resp.Status)
 	}
 
 	return endpoint, nil
 }
 
 // Create new endpoint with given Endpoint parameters
-func (c *ClientEndpoint) Create(ctx context.Context, params Endpoint) (*int, error) {
-	reqBody := HttpRequest{
-		Data: params,
-	}
-	rb, err := json.Marshal(reqBody)
+func (c *ClientEndpoint) Create(ctx context.Context, params Endpoint) (*string, error) {
+	rb, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
 	}
@@ -122,27 +109,21 @@ func (c *ClientEndpoint) Create(ctx context.Context, params Endpoint) (*int, err
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 
-	id := &ID{}
-	resp := &HttpResponse{Data: id}
+	endpoint := &Endpoint{}
 
-	resp, err = c.doRequest(req, resp)
+	err = c.doRequest(req, endpoint)
 	if err != nil {
 		return nil, err
 	}
-	if resp.Status != 201 {
-		return nil, fmt.Errorf("response status is %d", resp.Status)
-	}
 
-	return &id.ID, nil
+	return endpoint.ID, nil
 }
 
 // Update endpoint by its ID
 func (c *ClientEndpoint) Update(ctx context.Context, params Endpoint) (*Endpoint, error) {
-	reqBody := HttpRequest{
-		Data: params,
-	}
-	rb, err := json.Marshal(reqBody)
+	rb, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
 	}
@@ -152,46 +133,39 @@ func (c *ClientEndpoint) Update(ctx context.Context, params Endpoint) (*Endpoint
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"PATCH",
-		fmt.Sprintf("%s/%d", c.HostURL, params.ID),
+		fmt.Sprintf("%s/%s", c.HostURL, *params.ID),
 		strings.NewReader(string(rb)),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/merge-patch+json")
 
-	resp := &HttpResponse{}
+	endpoint := &Endpoint{}
 
-	resp, err = c.doRequest(req, resp)
+	err = c.doRequest(req, endpoint)
 	if err != nil {
 		return nil, err
 	}
-	if resp.Status != 200 {
-		return nil, fmt.Errorf("response status is %d", resp.Status)
-	}
 
-	return &params, nil
+	return endpoint, nil
 }
 
 // Delete endpoint by its ID
-func (c *ClientEndpoint) Delete(ctx context.Context, id int) error {
+func (c *ClientEndpoint) Delete(ctx context.Context, id string) error {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"DELETE",
-		fmt.Sprintf("%s/%d", c.HostURL, id),
+		fmt.Sprintf("%s/%s", c.HostURL, id),
 		nil,
 	)
 	if err != nil {
 		return err
 	}
 
-	resp := &HttpResponse{}
-
-	resp, err = c.doRequest(req, resp)
+	err = c.doRequest(req, nil)
 	if err != nil {
 		return err
-	}
-	if resp.Status != 204 {
-		return fmt.Errorf("response status is %d", resp.Status)
 	}
 
 	return nil

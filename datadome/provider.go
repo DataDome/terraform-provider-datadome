@@ -10,8 +10,8 @@ import (
 )
 
 type ProviderConfig struct {
-	ClientCustomRule common.API[datadome.CustomRule]
-	ClientEndpoint   common.API[datadome.Endpoint]
+	ClientCustomRule common.API[datadome.CustomRule, int]
+	ClientEndpoint   common.API[datadome.Endpoint, string]
 }
 
 // Provider of DataDome

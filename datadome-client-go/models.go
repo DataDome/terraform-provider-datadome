@@ -31,7 +31,7 @@ type CustomRules struct {
 
 // CustomRule structure containing the information of a custom rule
 type CustomRule struct {
-	ID           int    `json:"id"`
+	ID           *int   `json:"id"`
 	Name         string `json:"rule_name"`
 	Response     string `json:"rule_response"`
 	Query        string `json:"query"`
@@ -42,7 +42,7 @@ type CustomRule struct {
 
 // Endpoint structure containing the information of an endpoint
 type Endpoint struct {
-	ID                 int     `json:"id"`
+	ID                 *string `json:"id,omitempty"`
 	Name               string  `json:"name"`
 	Description        *string `json:"description,omitempty"`
 	PositionBefore     *string `json:"positionBefore,omitempty"`
