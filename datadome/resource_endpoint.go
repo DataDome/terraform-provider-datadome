@@ -30,8 +30,8 @@ func resourceEndpoint() *schema.Resource {
 				Optional: true,
 			},
 			"position_before": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"traffic_usage": {
