@@ -3,6 +3,8 @@ package datadome
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 	"time"
 
 	dd "github.com/datadome/terraform-provider/datadome-client-go"
@@ -37,10 +39,43 @@ func resourceEndpoint() *schema.Resource {
 			"traffic_usage": {
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					var diags diag.Diagnostics
+					value := v.(string)
+					if !(value == "Account Creation" ||
+						value == "Cart" ||
+						value == "Form" ||
+						value == "Forms" ||
+						value == "General" ||
+						value == "Login" ||
+						value == "Payment" ||
+						value == "Rss") {
+						diag := diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  "wrong value",
+							Detail:   fmt.Sprintf("%q is not an acceptable traffic_usage", value),
+						}
+						diags = append(diags, diag)
+					}
+					return diags
+				},
 			},
 			"source": {
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					var diags diag.Diagnostics
+					value := v.(string)
+					if !(value == "Api" || value == "Mobile App" || value == "Web Browser") {
+						diag := diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  "wrong value",
+							Detail:   fmt.Sprintf("%q is not an acceptable source", value),
+						}
+						diags = append(diags, diag)
+					}
+					return diags
+				},
 			},
 			"cookie_same_site": {
 				Type:     schema.TypeString,
@@ -52,7 +87,7 @@ func resourceEndpoint() *schema.Resource {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable cookieSameSite", value),
+							Detail:   fmt.Sprintf("%q is not an acceptable cookie_same_site", value),
 						}
 						diags = append(diags, diag)
 					}
@@ -63,21 +98,25 @@ func resourceEndpoint() *schema.Resource {
 			"domain": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				ValidateFunc: validation.StringIsValidRegExp,
 				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion"},
 			},
 			"path_inclusion": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				ValidateFunc: validation.StringIsValidRegExp,
 				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion"},
 			},
 			"path_exclusion": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				ValidateFunc: validation.StringIsValidRegExp,
 				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion"},
 			},
 			"user_agent_inclusion": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				ValidateFunc: validation.StringIsValidRegExp,
 				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion"},
 			},
 			"response_format": {
@@ -90,7 +129,7 @@ func resourceEndpoint() *schema.Resource {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable response format", value),
+							Detail:   fmt.Sprintf("%q is not an acceptable response_format", value),
 						}
 						diags = append(diags, diag)
 					}
@@ -118,10 +157,32 @@ func resourceEndpoint() *schema.Resource {
 			Update: schema.DefaultTimeout(1 * time.Minute),
 			Delete: schema.DefaultTimeout(1 * time.Minute),
 		},
+		CustomizeDiff: customizeDiffSourceTrafficUsage,
 	}
 }
 
-// resourceCustomRuleCreate is used to create new custom rule
+// customizeDiffSourceTrafficUsage raise an error in case the "traffic_usage" value does not fit with the "source" value
+func customizeDiffSourceTrafficUsage(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	source := d.Get("source").(string)
+	trafficUsage := d.Get("traffic_usage").(string)
+
+	switch source {
+	case "Api":
+		expectedTrafficUsage := []string{"General"}
+		if !slices.Contains(expectedTrafficUsage, trafficUsage) {
+			return fmt.Errorf(`expected "traffic_usage" to be one of {%s}, got %q`, strings.Join(expectedTrafficUsage, ", "), trafficUsage)
+		}
+	case "Mobile App":
+		expectedTrafficUsage := []string{"General", "Login", "Payment", "Cart", "Forms", "Account Creation"}
+		if !slices.Contains(expectedTrafficUsage, trafficUsage) {
+			return fmt.Errorf(`expected "traffic_usage" to be one of {%s}, got %q`, strings.Join(expectedTrafficUsage, ", "), trafficUsage)
+		}
+	}
+
+	return nil
+}
+
+// resourceEndpointCreate is used to create new custom rule
 func resourceEndpointCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*ProviderConfig)
 	c := config.ClientEndpoint
@@ -191,7 +252,7 @@ func resourceEndpointCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-// resourceCustomRuleRead is used to fetch the custom rule by its ID
+// resourceEndpointRead is used to fetch the custom rule by its ID
 func resourceEndpointRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*ProviderConfig)
 	c := config.ClientEndpoint
@@ -246,7 +307,7 @@ func resourceEndpointRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return diags
 }
 
-// resourceCustomRuleUpdate is used to update a custom rule by its ID
+// resourceEndpointUpdate is used to update a custom rule by its ID
 func resourceEndpointUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*ProviderConfig)
 	c := config.ClientEndpoint
@@ -315,7 +376,7 @@ func resourceEndpointUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return resourceEndpointRead(ctx, d, m)
 }
 
-// resourceCustomRuleDelete is used to delete a custom rule by its ID
+// resourceEndpointDelete is used to delete a custom rule by its ID
 func resourceEndpointDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*ProviderConfig)
 	c := config.ClientEndpoint

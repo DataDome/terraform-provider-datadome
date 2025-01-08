@@ -158,6 +158,34 @@ func TestProviderConfigure(t *testing.T) {
 }
 
 /*
+Resources test helpers
+*/
+
+// testAccCheckResourceExists check if the given resourceName exists
+func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		_, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %q", resourceName)
+		}
+
+		return nil
+	}
+}
+
+// testAccCheckCustomRuleResourceExists check if the given resourceName does not exists
+func testAccCheckResourceDoesNotExists(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		_, ok := s.RootModule().Resources[resourceName]
+		if ok {
+			return fmt.Errorf("resource still exists: %q", resourceName)
+		}
+
+		return nil
+	}
+}
+
+/*
 Resources CustomRules tests
 */
 
@@ -271,30 +299,6 @@ provider "datadome" {}
 
 func testAccCustomRuleResourcePreCheck(t *testing.T) {}
 
-// testAccCheckCustomRuleResourceExists check if the given resourceName exists
-func testAccCheckCustomRuleResourceExists(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		_, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource not found: %q", resourceName)
-		}
-
-		return nil
-	}
-}
-
-// testAccCheckCustomRuleResourceExists check if the given resourceName does not exists
-func testAccCheckCustomRuleResourceDoesNotExists(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		_, ok := s.RootModule().Resources[resourceName]
-		if ok {
-			return fmt.Errorf("resource still exists: %q", resourceName)
-		}
-
-		return nil
-	}
-}
-
 // TestAccCustomRuleResource_basic test the creation and the read of a new custom rule
 func TestAccCustomRuleResource_basic(t *testing.T) {
 	mockClient := datadome.NewMockClientCustomRule()
@@ -312,7 +316,7 @@ func TestAccCustomRuleResource_basic(t *testing.T) {
 			{
 				Config: testAccCustomRuleResourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomRuleResourceExists("datadome_custom_rule.accConfig"),
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "query", "ip: 192.168.0.1"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "response", "allow"),
@@ -342,7 +346,7 @@ func TestAccCustomRuleResource_update(t *testing.T) {
 			{
 				Config: testAccCustomRuleResourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomRuleResourceExists("datadome_custom_rule.accConfig"),
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "query", "ip: 192.168.0.1"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "response", "allow"),
@@ -354,7 +358,7 @@ func TestAccCustomRuleResource_update(t *testing.T) {
 			{
 				Config: testAccCustomRuleResourceConfigUpdate,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomRuleResourceExists("datadome_custom_rule.accConfig"),
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test-updated"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "priority", "normal"),
 				),
@@ -380,7 +384,7 @@ func TestAccCustomRuleResource_delete(t *testing.T) {
 			{
 				Config: testAccCustomRuleResourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomRuleResourceExists("datadome_custom_rule.accConfig"),
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "query", "ip: 192.168.0.1"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "response", "allow"),
@@ -392,7 +396,7 @@ func TestAccCustomRuleResource_delete(t *testing.T) {
 			{
 				Config: testAccCustomRuleResourceConfigEmpty,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomRuleResourceDoesNotExists("datadome_custom_rule.accConfig"),
+					testAccCheckResourceDoesNotExists("datadome_custom_rule.accConfig"),
 				),
 			},
 		},
@@ -486,13 +490,409 @@ func TestAccCustomRuleResource_updateAlreadyExists(t *testing.T) {
 			{
 				Config: testAccCustomRuleResourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomRuleResourceExists("datadome_custom_rule.accConfig"),
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test"),
 				),
 			},
 			{
 				Config:      testAccCustomRuleResourceConfigUpdate,
 				ExpectError: regexp.MustCompile(`'acc-test-updated' already exists`),
+			},
+		},
+	})
+}
+
+/*
+Resources Endpoints tests
+*/
+
+const testAccEndpointConfig = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "simple" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWithRegex = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "simple" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "(?:BLOCK|CHALLENGE)UA"
+}
+`
+
+const testAccEndpointConfigWithoutOptionalFields = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "simple" {
+  name                 = "test-terraform"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWithPositionBefore = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "first" {
+  name                 = "test-terraform"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+}
+
+resource "datadome_endpoint" "second" {
+  name                 = "test-terraform"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+  position_before      = datadome_endpoint.first.id
+}
+`
+
+const testAccEndpointConfigMissingFields = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "missing_fields" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+}
+`
+
+const testAccEndpointConfigWrongResponseFormat = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "wrong_response_format" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "wrong_response_format"
+  source               = "Web Browser"
+  user_agent_inclusion = "TFTEST"
+  traffic_usage        = "Account Creation"
+}
+`
+
+const testAccEndpointConfigWrongSource = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "wrong_source" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "wrong_source"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWrongTrafficUsage = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "wrong_traffic_usage" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "wrong_traffic_usage"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWrongTrafficUsageWithSourceApi = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "wrong_traffic_usage" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Api"
+  traffic_usage        = "Rss"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWrongTrafficUsageWithSourceMobileApp = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "wrong_traffic_usage" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Mobile App"
+  traffic_usage        = "Rss"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWrongCookieSameSite = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "wrong_cookie_same_site" {
+  cookie_same_site     = "wrong_cookie_same_site"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWrongPositionBeforeFormat = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "wrong_cookie_same_site" {
+  cookie_same_site     = "Lax"
+  position_before      = "some_incorrect_id"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigInvalidRegex = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "wrong_cookie_same_site" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "wrong(.*"
+}
+`
+
+// TestAccEndpointResource_basic tests the creation and the read of a new endpoint
+func TestAccEndpointResource_basic(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEndpointConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "cookie_same_site", "Lax"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "description", "This is a test"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "detection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "protection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "response_format", "auto"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccEndpointResource_createWithoutOptionalFields tests the creation of an endpoint resource without optional fields
+func TestAccEndpointResource_createWithoutOptionalFields(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEndpointConfigWithoutOptionalFields,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "cookie_same_site", "Lax"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "detection_enabled", "true"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "protection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "response_format", "auto"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccEndpointResource_createWithPositionBefore tests the creation of two resources
+// The first resource is created with the minimum required fields
+// The second resource is created with the minimum required fields and specify the `position_before` to use the ID of the first resource
+func TestAccEndpointResource_createWithPositionBefore(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEndpointConfigWithPositionBefore,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.first"),
+					testAccCheckResourceExists("datadome_endpoint.second"),
+					resource.TestCheckResourceAttrSet("datadome_endpoint.first", "id"),
+					resource.TestCheckResourceAttrSet("datadome_endpoint.second", "id"),
+					resource.TestCheckResourceAttrSet("datadome_endpoint.second", "position_before"),
+					resource.TestCheckResourceAttrPair(
+						"datadome_endpoint.second", "position_before",
+						"datadome_endpoint.first", "id",
+					),
+				),
+			},
+		},
+	})
+}
+
+// TestAccEndpointResource_createWithRegex tests the creation of a new endpoint with a Regex format for the "user_agent_inclusion" field
+func TestAccEndpointResource_createWithRegex(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEndpointConfigWithRegex,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "cookie_same_site", "Lax"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "description", "This is a test"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "detection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "protection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "response_format", "auto"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "(?:BLOCK|CHALLENGE)UA"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccEndpointResource_wrongParameters tests the creation of an endpoint resource by providing wrong inputs
+func TestAccEndpointResource_wrongParameters(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccEndpointConfigMissingFields,
+				ExpectError: regexp.MustCompile("Missing required argument"),
+			},
+			{
+				Config:      testAccEndpointConfigWrongResponseFormat,
+				ExpectError: regexp.MustCompile(`"wrong_response_format" is not an acceptable response_format`),
+			},
+			{
+				Config:      testAccEndpointConfigWrongSource,
+				ExpectError: regexp.MustCompile(`"wrong_source" is not an acceptable source`),
+			},
+			{
+				Config:      testAccEndpointConfigWrongTrafficUsage,
+				ExpectError: regexp.MustCompile(`"wrong_traffic_usage" is not an acceptable traffic_usage`),
+			},
+			{
+				Config:      testAccEndpointConfigWrongTrafficUsageWithSourceApi,
+				ExpectError: regexp.MustCompile(`expected "traffic_usage" to be one of {General}, got "Rss"`),
+			},
+			{
+				Config:      testAccEndpointConfigWrongTrafficUsageWithSourceMobileApp,
+				ExpectError: regexp.MustCompile(`expected "traffic_usage" to be one of {General, Login, Payment, Cart, Forms, Account Creation}, got "Rss"`),
+			},
+			{
+				Config:      testAccEndpointConfigWrongCookieSameSite,
+				ExpectError: regexp.MustCompile(`"wrong_cookie_same_site" is not an acceptable cookie_same_site`),
+			},
+			{
+				Config:      testAccEndpointConfigWrongPositionBeforeFormat,
+				ExpectError: regexp.MustCompile(`expected "position_before" to be a valid UUID, got some_incorrect_id`),
+			},
+			{
+				Config:      testAccEndpointConfigInvalidRegex,
+				ExpectError: regexp.MustCompile(`.*error parsing regexp.*`),
 			},
 		},
 	})
