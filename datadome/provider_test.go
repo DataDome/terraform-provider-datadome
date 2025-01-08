@@ -161,6 +161,8 @@ func TestProviderConfigure(t *testing.T) {
 Resources test helpers
 */
 
+func testAccResourcePreCheck(t *testing.T) {}
+
 // testAccCheckResourceExists check if the given resourceName exists
 func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -297,8 +299,6 @@ const testAccCustomRuleResourceConfigEmpty = `
 provider "datadome" {}
 `
 
-func testAccCustomRuleResourcePreCheck(t *testing.T) {}
-
 // TestAccCustomRuleResource_basic test the creation and the read of a new custom rule
 func TestAccCustomRuleResource_basic(t *testing.T) {
 	mockClient := datadome.NewMockClientCustomRule()
@@ -310,7 +310,7 @@ func TestAccCustomRuleResource_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -340,7 +340,7 @@ func TestAccCustomRuleResource_update(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -378,7 +378,7 @@ func TestAccCustomRuleResource_delete(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -414,7 +414,7 @@ func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -459,7 +459,7 @@ func TestAccCustomRuleResource_createAlreadyExists(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -484,7 +484,7 @@ func TestAccCustomRuleResource_updateAlreadyExists(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -723,7 +723,7 @@ func TestAccEndpointResource_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -739,6 +739,7 @@ func TestAccEndpointResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
+					resource.TestCheckResourceAttrSet("datadome_endpoint.simple", "position_before"),
 				),
 			},
 		},
@@ -756,7 +757,7 @@ func TestAccEndpointResource_createWithoutOptionalFields(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -790,7 +791,7 @@ func TestAccEndpointResource_createWithPositionBefore(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -822,7 +823,7 @@ func TestAccEndpointResource_createWithRegex(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -855,7 +856,7 @@ func TestAccEndpointResource_wrongParameters(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccCustomRuleResourcePreCheck(t) },
+		PreCheck:          func() { testAccResourcePreCheck(t) },
 		ProviderFactories: testAccProviders,
 		Steps: []resource.TestStep{
 			{

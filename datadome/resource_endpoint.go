@@ -35,6 +35,7 @@ func resourceEndpoint() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
+				Computed:     true,
 			},
 			"traffic_usage": {
 				Type:     schema.TypeString,
@@ -187,8 +188,6 @@ func resourceEndpointCreate(ctx context.Context, d *schema.ResourceData, m inter
 	config := m.(*ProviderConfig)
 	c := config.ClientEndpoint
 
-	var diags diag.Diagnostics
-
 	var description *string
 	descriptionValue, ok := d.GetOk("description")
 	if ok {
@@ -249,7 +248,7 @@ func resourceEndpointCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	d.SetId(*id)
 
-	return diags
+	return resourceEndpointRead(ctx, d, m)
 }
 
 // resourceEndpointRead is used to fetch the custom rule by its ID
