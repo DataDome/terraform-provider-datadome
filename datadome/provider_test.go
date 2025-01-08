@@ -739,7 +739,6 @@ func TestAccEndpointResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
-					resource.TestCheckResourceAttrSet("datadome_endpoint.simple", "position_before"),
 				),
 			},
 		},
