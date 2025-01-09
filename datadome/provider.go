@@ -55,7 +55,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	var diags diag.Diagnostics
 
 	if apikey != "" {
-		clientCustomRule, err := datadome.NewClientCustomRules(host, &apikey)
+		clientCustomRule, err := datadome.NewClientCustomRule(host, &apikey)
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -83,7 +83,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		}, diags
 	}
 
-	clientCustomRule, err := datadome.NewClientCustomRules(host, nil)
+	clientCustomRule, err := datadome.NewClientCustomRule(host, nil)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
