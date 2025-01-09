@@ -187,6 +187,17 @@ func testAccCheckResourceDoesNotExists(resourceName string) resource.TestCheckFu
 	}
 }
 
+// testAccImportStateIdFunc check if the given resourceName exists and return its ID
+func testAccImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(state *terraform.State) (string, error) {
+		rs, ok := state.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("resource not found: %q", resourceName)
+		}
+		return rs.Primary.ID, nil
+	}
+}
+
 /*
 Resources CustomRules tests
 */
@@ -403,6 +414,47 @@ func TestAccCustomRuleResource_delete(t *testing.T) {
 	})
 }
 
+// TestAccCustomRuleResource_import tests the creation of a custom rule and its importation in another configuration
+func TestAccCustomRuleResource_import(t *testing.T) {
+	mockClient := datadome.NewMockClientCustomRule()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCustomRuleResourceConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttrSet("datadome_custom_rule.accConfig", "id"),
+				),
+			},
+			{
+				Config:            ``,
+				ResourceName:      "datadome_custom_rule.accConfig",
+				ImportState:       true,
+				ImportStateIdFunc: testAccImportStateIdFunc("datadome_custom_rule.accConfig"),
+				ImportStateVerify: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "query", "ip: 192.168.0.1"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "response", "allow"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "endpoint_type", "web"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "priority", "low"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
 // TestAccCustomRuleResource_wrongParameters test the creation with wrong parameters (i.e. response, endpoint, and priority)
 func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
 	mockClient := datadome.NewMockClientCustomRule()
@@ -522,6 +574,7 @@ resource "datadome_endpoint" "simple" {
 }
 `
 
+// TestAccEndpointResource_import tests the creation of an endpoint and its importation in another configuration
 func TestAccEndpointResource_import(t *testing.T) {
 	mockClient := datadome.NewMockClientEndpoint()
 
@@ -543,16 +596,10 @@ func TestAccEndpointResource_import(t *testing.T) {
 				),
 			},
 			{
-				Config:       ``,
-				ResourceName: "datadome_endpoint.simple",
-				ImportState:  true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
-					rs, ok := state.RootModule().Resources["datadome_endpoint.simple"]
-					if !ok {
-						return "", fmt.Errorf("datadome_endpoint not found: datadome_endpoint.simple")
-					}
-					return rs.Primary.ID, nil
-				},
+				Config:            ``,
+				ResourceName:      "datadome_endpoint.simple",
+				ImportState:       true,
+				ImportStateIdFunc: testAccImportStateIdFunc("datadome_endpoint.simple"),
 				ImportStateVerify: true,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("datadome_endpoint.simple"),
