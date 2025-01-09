@@ -46,7 +46,7 @@ resource "datadome_endpoint" "new" {
 - `user_agent_inclusion` - (Optional) The user agent inclusion for the endpoint when using the regex definition method.
 - `response_format` - (Optional) The response format to use for challenged requests. It only accepts `auto`, `json`, or `html`. When not specified, it defaults to `auto`.
 - `detection_enabled` - (Optional) Determine whether the detection is enabled. Defaults to `true`.
-- `protection_enabled` - (Optional) Determing whether the detection is enabled. Defaults to `false`.
+- `protection_enabled` - (Optional) Determing whether the protection is enabled. Defaults to `false`.
 
 ## Attributes Reference
 
