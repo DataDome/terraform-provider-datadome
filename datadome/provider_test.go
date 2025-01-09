@@ -536,6 +536,7 @@ resource "datadome_endpoint" "simple" {
 }
 `
 
+// TestAccEndpointResource_update test the creation of an endpoint and update it
 func TestAccEndpointResource_update(t *testing.T) {
 	mockClient := datadome.NewMockClientEndpoint()
 
