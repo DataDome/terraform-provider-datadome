@@ -3,6 +3,7 @@ package datadome
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -85,15 +86,11 @@ func resourceCustomRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					validEnpointTypes := []string{"account-creation", "account-creation-app-mobile", "api", "api-app-mobile", "api-app-mobile-login", "cart", "cart-app-mobile", "forms", "forms-app-mobile", "login", "payment-app-mobile", "payment-web", "rss", "submit", "web"}
 					var diags diag.Diagnostics
 					value := v.(string)
 
-					if !(value == "web" ||
-						value == "api-app-mobile" ||
-						value == "rss" ||
-						value == "api" ||
-						value == "login" ||
-						value == "submit") {
+					if !slices.Contains(validEnpointTypes, value) {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
