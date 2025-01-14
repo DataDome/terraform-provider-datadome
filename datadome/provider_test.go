@@ -96,21 +96,22 @@ func TestProviderConfigure(t *testing.T) {
 
 		meta, diags := providerConfigure(context.Background(), rd)
 
-		assert.NotNil(t, diags)
-		assert.Nil(t, meta)
+		assert.Empty(t, diags)
+		assert.NotNil(t, meta)
 
-		assert.Len(t, diags, 1, "Expected one diag error")
-		assert.Equal(t, diag.Error, diags[0].Severity)
-		assert.Equal(t, diags[0].Summary, "Missing required 'apikey' value")
-		assert.Equal(t, diags[0].Detail, "The 'apikey' field is required but not set.")
+		config, ok := meta.(*ProviderConfig)
+		assert.True(t, ok, "meta should be of type *ProviderConfig")
+		assert.NotNil(t, config.ClientCustomRule)
+		assert.NotNil(t, config.ClientEndpoint)
+		clientCustomRule := config.ClientCustomRule.(*datadome.ClientCustomRule)
+		assert.Equal(t, "", clientCustomRule.Token)
+		clientEndpoint := config.ClientEndpoint.(*datadome.ClientEndpoint)
+		assert.Equal(t, "", clientEndpoint.Token)
 	})
 
 	t.Run("With custom host (direct)", func(t *testing.T) {
-		// Set required value
-		apiKey := "valid_api_key"
 		host := "custom_host"
 		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{
-			"apikey": apiKey,
 			"host": host,
 		})
 
@@ -130,17 +131,8 @@ func TestProviderConfigure(t *testing.T) {
 	})
 
 	t.Run("With custom host (env)", func(t *testing.T) {
-		// Set required value
-		apiKey := "valid_api_key"
-		err := os.Setenv("DATADOME_APIKEY", apiKey)
-		if err != nil {
-			t.Fatalf("fail to set DATADOME_APIKEY with value %q", apiKey)
-			return
-		}
-		defer os.Unsetenv("DATADOME_APIKEY")
-
 		host := "custom_host"
-		err = os.Setenv("DATADOME_HOST", host)
+		err := os.Setenv("DATADOME_HOST", host)
 		if err != nil {
 			t.Fatalf("fail to set DATADOME_HOST with value %q", host)
 			return
