@@ -111,7 +111,7 @@ func TestProviderConfigure(t *testing.T) {
 		host := "custom_host"
 		rd := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{
 			"apikey": apiKey,
-			"host": host,
+			"host":   host,
 		})
 
 		meta, diags := providerConfigure(context.Background(), rd)
