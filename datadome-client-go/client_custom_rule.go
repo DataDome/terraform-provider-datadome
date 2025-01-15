@@ -11,21 +11,21 @@ import (
 	"time"
 )
 
-// HOST_URL default datadome dashboard URL
-const HOST_URL string = "https://customer-api.datadome.co/1.1/protection"
+// HostURLCustomRule default datadome dashboard URL
+const HostURLCustomRule string = "https://customer-api.datadome.co/1.1/protection/custom-rules"
 
-// Client to perform request on DataDome's API
-type Client struct {
+// ClientCustomRule to perform request on DataDome's API
+type ClientCustomRule struct {
 	HostURL    string
 	HTTPClient *http.Client
 	Token      string
 }
 
-// NewClient is instantiate with given host and password parameters
-func NewClient(host, password *string) (*Client, error) {
-	c := Client{
+// NewClientCustomRule creates a new client instance for Custom Rules using the specified host and password parameters
+func NewClientCustomRule(host, password *string) (*ClientCustomRule, error) {
+	c := ClientCustomRule{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		HostURL:    HOST_URL,
+		HostURL:    HostURLCustomRule,
 	}
 
 	if host != nil {
@@ -40,7 +40,7 @@ func NewClient(host, password *string) (*Client, error) {
 }
 
 // doRequest on the DataDome API with given http.Request and HttpResponse
-func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*HttpResponse, error) {
+func (c *ClientCustomRule) doRequest(req *http.Request, httpResponse *HttpResponse) (*HttpResponse, error) {
 	// Add apikey as a header on each request for authentication
 	// Add also withoutTraffic parameter to true to have better performances
 	q := req.URL.Query()
@@ -75,7 +75,7 @@ func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*Http
 		return nil, err
 	}
 
-	if httpResponse.Status != 200 {
+	if httpResponse.Status < 200 || httpResponse.Status > 299 {
 		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, httpResponse.Errors)
 	}
 
@@ -83,8 +83,8 @@ func (c *Client) doRequest(req *http.Request, httpResponse *HttpResponse) (*Http
 }
 
 // Read custom rule list from the API management
-func (c *Client) Read(ctx context.Context) ([]CustomRule, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/custom-rules", c.HostURL), nil)
+func (c *ClientCustomRule) Read(ctx context.Context, id int) (*CustomRule, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", c.HostURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -100,11 +100,18 @@ func (c *Client) Read(ctx context.Context) ([]CustomRule, error) {
 		return nil, fmt.Errorf("response status is %d", resp.Status)
 	}
 
-	return customRules.CustomRules, nil
+	customRule := &CustomRule{}
+	for _, v := range customRules.CustomRules {
+		if *v.ID == id {
+			customRule = &v
+		}
+	}
+
+	return customRule, nil
 }
 
 // Create custom rule with given CustomRule parameters
-func (c *Client) Create(ctx context.Context, params CustomRule) (*int, error) {
+func (c *ClientCustomRule) Create(ctx context.Context, params CustomRule) (*int, error) {
 	reqBody := HttpRequest{
 		Data: params,
 	}
@@ -116,7 +123,7 @@ func (c *Client) Create(ctx context.Context, params CustomRule) (*int, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"POST",
-		fmt.Sprintf("%s/custom-rules", c.HostURL),
+		c.HostURL,
 		strings.NewReader(string(rb)),
 	)
 	if err != nil {
@@ -138,7 +145,7 @@ func (c *Client) Create(ctx context.Context, params CustomRule) (*int, error) {
 }
 
 // Update custom rule by its ID
-func (c *Client) Update(ctx context.Context, params CustomRule) (*CustomRule, error) {
+func (c *ClientCustomRule) Update(ctx context.Context, params CustomRule) (*CustomRule, error) {
 	reqBody := HttpRequest{
 		Data: params,
 	}
@@ -152,7 +159,7 @@ func (c *Client) Update(ctx context.Context, params CustomRule) (*CustomRule, er
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"PUT",
-		fmt.Sprintf("%s/custom-rules/%d", c.HostURL, params.ID),
+		fmt.Sprintf("%s/%d", c.HostURL, params.ID),
 		strings.NewReader(string(rb)),
 	)
 	if err != nil {
@@ -173,11 +180,11 @@ func (c *Client) Update(ctx context.Context, params CustomRule) (*CustomRule, er
 }
 
 // Delete custom rule by its ID
-func (c *Client) Delete(ctx context.Context, id int) error {
+func (c *ClientCustomRule) Delete(ctx context.Context, id int) error {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"DELETE",
-		fmt.Sprintf("%s/custom-rules/%d", c.HostURL, id),
+		fmt.Sprintf("%s/%d", c.HostURL, id),
 		nil,
 	)
 	if err != nil {
