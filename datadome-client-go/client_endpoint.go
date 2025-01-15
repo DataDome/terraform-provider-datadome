@@ -21,7 +21,7 @@ type ClientEndpoint struct {
 	Token      string
 }
 
-// NewClientEndpoint is instantiate with given host and password parameters
+// NewClientEndpoint creates a new client instance for Endpoints using the specified host and password parameters
 func NewClientEndpoint(host, password *string) (*ClientEndpoint, error) {
 	c := ClientEndpoint{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},

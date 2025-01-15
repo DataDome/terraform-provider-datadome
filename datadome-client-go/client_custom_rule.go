@@ -21,8 +21,8 @@ type ClientCustomRule struct {
 	Token      string
 }
 
-// NewClientCustomRules is instantiate with given host and password parameters
-func NewClientCustomRules(host, password *string) (*ClientCustomRule, error) {
+// NewClientCustomRule creates a new client instance for Custom Rules using the specified host and password parameters
+func NewClientCustomRule(host, password *string) (*ClientCustomRule, error) {
 	c := ClientCustomRule{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		HostURL:    HostURLCustomRule,
