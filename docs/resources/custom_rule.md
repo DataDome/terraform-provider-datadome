@@ -20,7 +20,6 @@ resource "datadome_custom_rule" "new" {
   priority      = "normal"
   enabled       = true
 }
-
 ```
 
 ## Argument Reference
