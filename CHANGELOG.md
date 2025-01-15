@@ -1,5 +1,11 @@
 # DataDome Terraform Provider
 
+## 2.0.2 (2025-01-15)
+
+### BUG FIXES:
+
+- Update list of allowed `endpoint_type` for [adding](https://docs.datadome.co/reference/post_1-1-protection-custom-rules), [updating](https://docs.datadome.co/reference/put_1-1-protection-custom-rules-customruleid), and importing custom rule resources
+
 ## 2.0.1 (2024-12-18)
 
 ### BUG FIXES:
