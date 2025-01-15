@@ -40,13 +40,13 @@ func Provider() *schema.Provider {
 }
 
 // providerConfigure is used to configure the provider with the schema's variable
-func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func providerConfigure(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	var apikey *string
 
-	aVal, ok := d.GetOk("apikey")
+	aVal, ok := data.GetOk("apikey")
 	if !ok || aVal.(string) == "" {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -60,7 +60,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	var host *string
 
-	hVal, ok := d.GetOk("host")
+	hVal, ok := data.GetOk("host")
 	if ok {
 		tempHost := hVal.(string)
 		host = &tempHost
