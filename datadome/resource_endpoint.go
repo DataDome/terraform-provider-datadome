@@ -163,9 +163,9 @@ func resourceEndpoint() *schema.Resource {
 }
 
 // customizeDiffSourceTrafficUsage raise an error in case the "traffic_usage" value does not fit with the "source" value
-func customizeDiffSourceTrafficUsage(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	source := d.Get("source").(string)
-	trafficUsage := d.Get("traffic_usage").(string)
+func customizeDiffSourceTrafficUsage(ctx context.Context, data *schema.ResourceDiff, meta interface{}) error {
+	source := data.Get("source").(string)
+	trafficUsage := data.Get("traffic_usage").(string)
 
 	switch source {
 	case "Api":
@@ -183,62 +183,62 @@ func customizeDiffSourceTrafficUsage(ctx context.Context, d *schema.ResourceDiff
 	return nil
 }
 
-// resourceEndpointCreate is used to create new custom rule
-func resourceEndpointCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*ProviderConfig)
+// resourceCustomRuleCreate is used to create new custom rule
+func resourceEndpointCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*ProviderConfig)
 	c := config.ClientEndpoint
 
 	var description *string
-	descriptionValue, ok := d.GetOk("description")
+	descriptionValue, ok := data.GetOk("description")
 	if ok {
 		descriptionString := descriptionValue.(string)
 		description = &descriptionString
 	}
 	var positionBefore *string
-	positionBeforeValue, ok := d.GetOk("position_before")
+	positionBeforeValue, ok := data.GetOk("position_before")
 	if ok {
 		positionBeforeString := positionBeforeValue.(string)
 		positionBefore = &positionBeforeString
 	}
 	var domain *string
-	domainValue, ok := d.GetOk("domain")
+	domainValue, ok := data.GetOk("domain")
 	if ok {
 		domainString := domainValue.(string)
 		domain = &domainString
 	}
 	var pathInclusion *string
-	pathInclusionValue, ok := d.GetOk("path_inclusion")
+	pathInclusionValue, ok := data.GetOk("path_inclusion")
 	if ok {
 		pathInclusionString := pathInclusionValue.(string)
 		pathInclusion = &pathInclusionString
 	}
 	var pathExclusion *string
-	pathExclusionValue, ok := d.GetOk("path_exclusion")
+	pathExclusionValue, ok := data.GetOk("path_exclusion")
 	if ok {
 		pathExclusionString := pathExclusionValue.(string)
 		pathExclusion = &pathExclusionString
 	}
 	var userAgentInclusion *string
-	userAgentInclusionValue, ok := d.GetOk("user_agent_inclusion")
+	userAgentInclusionValue, ok := data.GetOk("user_agent_inclusion")
 	if ok {
 		userAgentInclusionString := userAgentInclusionValue.(string)
 		userAgentInclusion = &userAgentInclusionString
 	}
 
 	newEndpoint := dd.Endpoint{
-		Name:               d.Get("name").(string),
+		Name:               data.Get("name").(string),
 		Description:        description,
 		PositionBefore:     positionBefore,
-		TrafficUsage:       d.Get("traffic_usage").(string),
-		Source:             d.Get("source").(string),
-		CookieSameSite:     d.Get("cookie_same_site").(string),
+		TrafficUsage:       data.Get("traffic_usage").(string),
+		Source:             data.Get("source").(string),
+		CookieSameSite:     data.Get("cookie_same_site").(string),
 		Domain:             domain,
 		PathInclusion:      pathInclusion,
 		PathExclusion:      pathExclusion,
 		UserAgentInclusion: userAgentInclusion,
-		ResponseFormat:     d.Get("response_format").(string),
-		DetectionEnabled:   d.Get("detection_enabled").(bool),
-		ProtectionEnabled:  d.Get("protection_enabled").(bool),
+		ResponseFormat:     data.Get("response_format").(string),
+		DetectionEnabled:   data.Get("detection_enabled").(bool),
+		ProtectionEnabled:  data.Get("protection_enabled").(bool),
 	}
 
 	id, err := c.Create(ctx, newEndpoint)
@@ -246,104 +246,104 @@ func resourceEndpointCreate(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	d.SetId(*id)
+	data.SetId(*id)
 
 	return resourceEndpointRead(ctx, d, m)
 }
 
-// resourceEndpointRead is used to fetch the custom rule by its ID
-func resourceEndpointRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*ProviderConfig)
+// resourceCustomRuleRead is used to fetch the custom rule by its ID
+func resourceEndpointRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*ProviderConfig)
 	c := config.ClientEndpoint
 
 	var diags diag.Diagnostics
 
-	endpoint, err := c.Read(ctx, d.Id())
+	endpoint, err := c.Read(ctx, data.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err = d.Set("name", endpoint.Name); err != nil {
+	if err = data.Set("name", endpoint.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("description", endpoint.Description); err != nil {
+	if err = data.Set("description", endpoint.Description); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("position_before", endpoint.PositionBefore); err != nil {
+	if err = data.Set("position_before", endpoint.PositionBefore); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("traffic_usage", endpoint.TrafficUsage); err != nil {
+	if err = data.Set("traffic_usage", endpoint.TrafficUsage); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("source", endpoint.Source); err != nil {
+	if err = data.Set("source", endpoint.Source); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("cookie_same_site", endpoint.CookieSameSite); err != nil {
+	if err = data.Set("cookie_same_site", endpoint.CookieSameSite); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("domain", endpoint.Domain); err != nil {
+	if err = data.Set("domain", endpoint.Domain); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("path_inclusion", endpoint.PathInclusion); err != nil {
+	if err = data.Set("path_inclusion", endpoint.PathInclusion); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("path_exclusion", endpoint.PathExclusion); err != nil {
+	if err = data.Set("path_exclusion", endpoint.PathExclusion); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("user_agent_inclusion", endpoint.UserAgentInclusion); err != nil {
+	if err = data.Set("user_agent_inclusion", endpoint.UserAgentInclusion); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("response_format", endpoint.ResponseFormat); err != nil {
+	if err = data.Set("response_format", endpoint.ResponseFormat); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("detection_enabled", endpoint.DetectionEnabled); err != nil {
+	if err = data.Set("detection_enabled", endpoint.DetectionEnabled); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("protection_enabled", endpoint.ProtectionEnabled); err != nil {
+	if err = data.Set("protection_enabled", endpoint.ProtectionEnabled); err != nil {
 		return diag.FromErr(err)
 	}
 
 	return diags
 }
 
-// resourceEndpointUpdate is used to update a custom rule by its ID
-func resourceEndpointUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*ProviderConfig)
+// resourceCustomRuleUpdate is used to update a custom rule by its ID
+func resourceEndpointUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*ProviderConfig)
 	c := config.ClientEndpoint
 
-	ID := d.Id()
+	ID := data.Id()
 	var description *string
-	descriptionValue, ok := d.GetOk("description")
+	descriptionValue, ok := data.GetOk("description")
 	if ok {
 		descriptionString := descriptionValue.(string)
 		description = &descriptionString
 	}
 	var positionBefore *string
-	positionBeforeValue, ok := d.GetOk("position_before")
+	positionBeforeValue, ok := data.GetOk("position_before")
 	if ok {
 		positionBeforeString := positionBeforeValue.(string)
 		positionBefore = &positionBeforeString
 	}
 	var domain *string
-	domainValue, ok := d.GetOk("domain")
+	domainValue, ok := data.GetOk("domain")
 	if ok {
 		domainString := domainValue.(string)
 		domain = &domainString
 	}
 	var pathInclusion *string
-	pathInclusionValue, ok := d.GetOk("path_inclusion")
+	pathInclusionValue, ok := data.GetOk("path_inclusion")
 	if ok {
 		pathInclusionString := pathInclusionValue.(string)
 		pathInclusion = &pathInclusionString
 	}
 	var pathExclusion *string
-	pathExclusionValue, ok := d.GetOk("path_exclusion")
+	pathExclusionValue, ok := data.GetOk("path_exclusion")
 	if ok {
 		pathExclusionString := pathExclusionValue.(string)
 		pathExclusion = &pathExclusionString
 	}
 	var userAgentInclusion *string
-	userAgentInclusionValue, ok := d.GetOk("user_agent_inclusion")
+	userAgentInclusionValue, ok := data.GetOk("user_agent_inclusion")
 	if ok {
 		userAgentInclusionString := userAgentInclusionValue.(string)
 		userAgentInclusion = &userAgentInclusionString
@@ -351,38 +351,38 @@ func resourceEndpointUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	newEndpoint := dd.Endpoint{
 		ID:                 &ID,
-		Name:               d.Get("name").(string),
+		Name:               data.Get("name").(string),
 		Description:        description,
 		PositionBefore:     positionBefore,
-		TrafficUsage:       d.Get("traffic_usage").(string),
-		Source:             d.Get("source").(string),
-		CookieSameSite:     d.Get("cookie_same_site").(string),
+		TrafficUsage:       data.Get("traffic_usage").(string),
+		Source:             data.Get("source").(string),
+		CookieSameSite:     data.Get("cookie_same_site").(string),
 		Domain:             domain,
 		PathInclusion:      pathInclusion,
 		PathExclusion:      pathExclusion,
 		UserAgentInclusion: userAgentInclusion,
-		ResponseFormat:     d.Get("response_format").(string),
-		DetectionEnabled:   d.Get("detection_enabled").(bool),
-		ProtectionEnabled:  d.Get("protection_enabled").(bool),
+		ResponseFormat:     data.Get("response_format").(string),
+		DetectionEnabled:   data.Get("detection_enabled").(bool),
+		ProtectionEnabled:  data.Get("protection_enabled").(bool),
 	}
 
 	o, err := c.Update(ctx, newEndpoint)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(*o.ID)
+	data.SetId(*o.ID)
 
-	return resourceEndpointRead(ctx, d, m)
+	return resourceEndpointRead(ctx, data, meta)
 }
 
-// resourceEndpointDelete is used to delete a custom rule by its ID
-func resourceEndpointDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*ProviderConfig)
+// resourceCustomRuleDelete is used to delete a custom rule by its ID
+func resourceEndpointDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*ProviderConfig)
 	c := config.ClientEndpoint
 
 	var diags diag.Diagnostics
 
-	err := c.Delete(ctx, d.Id())
+	err := c.Delete(ctx, data.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
