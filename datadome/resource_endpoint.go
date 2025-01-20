@@ -248,7 +248,7 @@ func resourceEndpointCreate(ctx context.Context, data *schema.ResourceData, meta
 
 	data.SetId(*id)
 
-	return resourceEndpointRead(ctx, d, m)
+	return resourceEndpointRead(ctx, data, meta)
 }
 
 // resourceCustomRuleRead is used to fetch the custom rule by its ID
