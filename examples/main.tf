@@ -13,10 +13,22 @@ provider "datadome" {
   apikey = "apikey"
 }
 
-resource "datadome_custom_rule" "new" {
+resource "datadome_custom_rule" "new_custom_rule" {
   name          = "test-terraform"
   query         = "ip: 192.168.0.1"
   response      = "allow"
   endpoint_type = "web"
   priority      = "normal"
+}
+
+resource "datadome_endpoint" "new_endpoint" {
+  cookie_same_site     = "Lax"
+  description          = "Some description"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
 }

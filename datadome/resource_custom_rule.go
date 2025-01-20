@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/datadome/terraform-provider/common"
 	dd "github.com/datadome/terraform-provider/datadome-client-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -120,19 +119,20 @@ func resourceCustomRule() *schema.Resource {
 }
 
 // resourceCustomRuleCreate is used to create new custom rule
-func resourceCustomRuleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(common.API[dd.CustomRule])
+func resourceCustomRuleCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*ProviderConfig)
+	c := config.ClientCustomRule
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	newCustomRule := dd.CustomRule{
-		Name:         d.Get("name").(string),
-		Response:     d.Get("response").(string),
-		Query:        d.Get("query").(string),
-		EndpointType: d.Get("endpoint_type").(string),
-		Priority:     d.Get("priority").(string),
-		Enabled:      d.Get("enabled").(bool),
+		Name:         data.Get("name").(string),
+		Response:     data.Get("response").(string),
+		Query:        data.Get("query").(string),
+		EndpointType: data.Get("endpoint_type").(string),
+		Priority:     data.Get("priority").(string),
+		Enabled:      data.Get("enabled").(bool),
 	}
 
 	id, err := c.Create(ctx, newCustomRule)
@@ -140,45 +140,44 @@ func resourceCustomRuleCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	d.SetId(strconv.Itoa(*id))
+	data.SetId(strconv.Itoa(*id))
 
 	return diags
 }
 
 // resourceCustomRuleRead is used to fetch the custom rule by its ID
-func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(common.API[dd.CustomRule])
+func resourceCustomRuleRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*ProviderConfig)
+	c := config.ClientCustomRule
 
 	var diags diag.Diagnostics
 
-	o, err := c.Read(ctx)
+	id, err := strconv.Atoi(data.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	customRule := dd.CustomRule{}
-	for _, v := range o {
-		if strconv.Itoa(v.ID) == d.Id() {
-			customRule = v
-		}
+	customRule, err := c.Read(ctx, id)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err = d.Set("name", customRule.Name); err != nil {
+	if err = data.Set("name", customRule.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("response", customRule.Response); err != nil {
+	if err = data.Set("response", customRule.Response); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("query", customRule.Query); err != nil {
+	if err = data.Set("query", customRule.Query); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("endpoint_type", customRule.EndpointType); err != nil {
+	if err = data.Set("endpoint_type", customRule.EndpointType); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("priority", customRule.Priority); err != nil {
+	if err = data.Set("priority", customRule.Priority); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("enabled", customRule.Enabled); err != nil {
+	if err = data.Set("enabled", customRule.Enabled); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -186,39 +185,41 @@ func resourceCustomRuleRead(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 // resourceCustomRuleUpdate is used to update a custom rule by its ID
-func resourceCustomRuleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(common.API[dd.CustomRule])
+func resourceCustomRuleUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*ProviderConfig)
+	c := config.ClientCustomRule
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := strconv.Atoi(data.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	newCustomRule := dd.CustomRule{
-		ID:           id,
-		Name:         d.Get("name").(string),
-		Response:     d.Get("response").(string),
-		Query:        d.Get("query").(string),
-		EndpointType: d.Get("endpoint_type").(string),
-		Priority:     d.Get("priority").(string),
-		Enabled:      d.Get("enabled").(bool),
+		ID:           &id,
+		Name:         data.Get("name").(string),
+		Response:     data.Get("response").(string),
+		Query:        data.Get("query").(string),
+		EndpointType: data.Get("endpoint_type").(string),
+		Priority:     data.Get("priority").(string),
+		Enabled:      data.Get("enabled").(bool),
 	}
 
 	o, err := c.Update(ctx, newCustomRule)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(strconv.Itoa(o.ID))
-	return resourceCustomRuleRead(ctx, d, m)
+	data.SetId(strconv.Itoa(*o.ID))
+	return resourceCustomRuleRead(ctx, data, meta)
 }
 
 // resourceCustomRuleDelete is used to delete a custom rule by its ID
-func resourceCustomRuleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(common.API[dd.CustomRule])
+func resourceCustomRuleDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*ProviderConfig)
+	c := config.ClientCustomRule
 
 	var diags diag.Diagnostics
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := strconv.Atoi(data.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
