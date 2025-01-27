@@ -3,7 +3,6 @@ package datadome
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
@@ -170,12 +169,12 @@ func customizeDiffSourceTrafficUsage(ctx context.Context, data *schema.ResourceD
 	switch source {
 	case "Api":
 		expectedTrafficUsage := []string{"General"}
-		if !slices.Contains(expectedTrafficUsage, trafficUsage) {
+		if trafficUsage != "General" {
 			return fmt.Errorf(`expected "traffic_usage" to be one of {%s}, got %q`, strings.Join(expectedTrafficUsage, ", "), trafficUsage)
 		}
 	case "Mobile App":
 		expectedTrafficUsage := []string{"General", "Login", "Payment", "Cart", "Forms", "Account Creation"}
-		if !slices.Contains(expectedTrafficUsage, trafficUsage) {
+		if trafficUsage != "General" && trafficUsage != "Login" && trafficUsage != "Payment" && trafficUsage != "Cart" && trafficUsage != "Forms" && trafficUsage != "Account" {
 			return fmt.Errorf(`expected "traffic_usage" to be one of {%s}, got %q`, strings.Join(expectedTrafficUsage, ", "), trafficUsage)
 		}
 	}
