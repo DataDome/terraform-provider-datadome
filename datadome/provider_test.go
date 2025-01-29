@@ -183,7 +183,7 @@ func testAccCheckResourceExists(resourceName string) resource.TestCheckFunc {
 	}
 }
 
-// testAccCheckCustomRuleResourceExists check if the given resourceName does not exists
+// testAccCheckResourceDoesNotExists check if the given resourceName does not exists
 func testAccCheckResourceDoesNotExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		_, ok := s.RootModule().Resources[resourceName]
@@ -303,10 +303,6 @@ resource "datadome_custom_rule" "accConfig" {
 }
 `
 
-const testAccCustomRuleResourceConfigEmpty = `
-provider "datadome" {}
-`
-
 // TestAccCustomRuleResource_basic test the creation and the read of a new custom rule
 func TestAccCustomRuleResource_basic(t *testing.T) {
 	mockClient := datadome.NewMockClientCustomRule()
@@ -402,7 +398,7 @@ func TestAccCustomRuleResource_delete(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCustomRuleResourceConfigEmpty,
+				Config: `provider "datadome" {}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceDoesNotExists("datadome_custom_rule.accConfig"),
 				),
@@ -763,6 +759,46 @@ func TestAccEndpointResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccEndpointResource_delete test the creation of a new endpoint and delete it
+func TestAccEndpointResource_delete(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEndpointConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttrSet("datadome_endpoint.simple", "id"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "cookie_same_site", "Lax"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "description", "This is a test"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "detection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "protection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "response_format", "auto"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
+				),
+			},
+			{
+				Config: `provider "datadome" {}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceDoesNotExists("datadome_endpoint.simple"),
 				),
 			},
 		},
