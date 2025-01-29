@@ -578,6 +578,21 @@ resource "datadome_endpoint" "simple" {
 }
 `
 
+const testAccEndpointConfigUpdate = `
+provider "datadome" {}
+resource "datadome_endpoint" "simple" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform-updated"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Mobile App"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
 const testAccEndpointConfigWithRegex = `
 provider "datadome" {}
 
@@ -856,6 +871,47 @@ func TestAccEndpointResource_import(t *testing.T) {
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccEndpointResource_update test the creation of an endpoint and update it
+func TestAccEndpointResource_update(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEndpointConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "cookie_same_site", "Lax"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "description", "This is a test"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "detection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "protection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "response_format", "auto"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
+				),
+			},
+			{
+				Config: testAccEndpointConfigUpdate,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "name", "test-terraform-updated"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Mobile App"),
 				),
 			},
 		},
