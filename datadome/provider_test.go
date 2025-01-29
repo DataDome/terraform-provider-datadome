@@ -720,6 +720,22 @@ resource "datadome_endpoint" "wrong_cookie_same_site" {
 }
 `
 
+const testAccEndpointConfigWrongDetectionValue = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "simple" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = true
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "TFTEST"
+}
+`
+
 // TestAccEndpointResource_basic tests the creation and the read of a new endpoint
 func TestAccEndpointResource_basic(t *testing.T) {
 	mockClient := datadome.NewMockClientEndpoint()
@@ -901,6 +917,10 @@ func TestAccEndpointResource_wrongParameters(t *testing.T) {
 			{
 				Config:      testAccEndpointConfigInvalidRegex,
 				ExpectError: regexp.MustCompile(`.*error parsing regexp.*`),
+			},
+			{
+				Config:      testAccEndpointConfigWrongDetectionValue,
+				ExpectError: regexp.MustCompile("the detection must be activated in order to activate the protection"),
 			},
 		},
 	})

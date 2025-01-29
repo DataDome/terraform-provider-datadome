@@ -157,12 +157,15 @@ func resourceEndpoint() *schema.Resource {
 			Update: schema.DefaultTimeout(1 * time.Minute),
 			Delete: schema.DefaultTimeout(1 * time.Minute),
 		},
-		CustomizeDiff: customizeDiffSourceTrafficUsage,
+		CustomizeDiff: customizeDiffEndpoints,
 	}
 }
 
-// customizeDiffSourceTrafficUsage raise an error in case the "traffic_usage" value does not fit with the "source" value
-func customizeDiffSourceTrafficUsage(ctx context.Context, data *schema.ResourceDiff, meta interface{}) error {
+// customizeDiffEndpoints applies additional verifications regarding the fields of the endpoint
+// It raises an error when:
+// - the "traffic_usage" value does not fit with the "source" value
+// - the "protection_enabled" is set to `true` and the "detection_enabled" is set to `false`
+func customizeDiffEndpoints(ctx context.Context, data *schema.ResourceDiff, meta interface{}) error {
 	source := data.Get("source").(string)
 	trafficUsage := data.Get("traffic_usage").(string)
 
@@ -177,6 +180,12 @@ func customizeDiffSourceTrafficUsage(ctx context.Context, data *schema.ResourceD
 		if trafficUsage != "General" && trafficUsage != "Login" && trafficUsage != "Payment" && trafficUsage != "Cart" && trafficUsage != "Forms" && trafficUsage != "Account" {
 			return fmt.Errorf(`expected "traffic_usage" to be one of {%s}, got %q`, strings.Join(expectedTrafficUsage, ", "), trafficUsage)
 		}
+	}
+
+	protectionEnabled := data.Get("protection_enabled").(bool)
+	detectionEnabled := data.Get("detection_enabled").(bool)
+	if !detectionEnabled && protectionEnabled {
+		return fmt.Errorf("the detection must be activated in order to activate the protection")
 	}
 
 	return nil
