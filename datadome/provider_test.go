@@ -195,6 +195,17 @@ func testAccCheckResourceDoesNotExists(resourceName string) resource.TestCheckFu
 	}
 }
 
+// testAccImportStateIdFunc check if the given resourceName exists and return its ID
+func testAccImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(state *terraform.State) (string, error) {
+		rs, ok := state.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("resource not found: %q", resourceName)
+		}
+		return rs.Primary.ID, nil
+	}
+}
+
 /*
 Resources CustomRules tests
 */
@@ -401,6 +412,47 @@ func TestAccCustomRuleResource_delete(t *testing.T) {
 				Config: `provider "datadome" {}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceDoesNotExists("datadome_custom_rule.accConfig"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccCustomRuleResource_import tests the creation of a custom rule and its importation in another configuration
+func TestAccCustomRuleResource_import(t *testing.T) {
+	mockClient := datadome.NewMockClientCustomRule()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCustomRuleResourceConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttrSet("datadome_custom_rule.accConfig", "id"),
+				),
+			},
+			{
+				Config:            ``,
+				ResourceName:      "datadome_custom_rule.accConfig",
+				ImportState:       true,
+				ImportStateIdFunc: testAccImportStateIdFunc("datadome_custom_rule.accConfig"),
+				ImportStateVerify: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "query", "ip: 192.168.0.1"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "response", "allow"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "endpoint_type", "web"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "priority", "low"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "enabled", "true"),
 				),
 			},
 		},
@@ -750,6 +802,51 @@ func TestAccEndpointResource_basic(t *testing.T) {
 				Config: testAccEndpointConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "cookie_same_site", "Lax"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "description", "This is a test"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "detection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "protection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "response_format", "auto"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "user_agent_inclusion", "TFTEST"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccEndpointResource_import tests the creation of an endpoint and its importation in another configuration
+func TestAccEndpointResource_import(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEndpointConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttrSet("datadome_endpoint.simple", "id"),
+				),
+			},
+			{
+				Config:            ``,
+				ResourceName:      "datadome_endpoint.simple",
+				ImportState:       true,
+				ImportStateIdFunc: testAccImportStateIdFunc("datadome_endpoint.simple"),
+				ImportStateVerify: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttrSet("datadome_endpoint.simple", "id"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "cookie_same_site", "Lax"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "description", "This is a test"),
 					resource.TestCheckResourceAttr("datadome_endpoint.simple", "detection_enabled", "false"),
