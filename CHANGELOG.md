@@ -1,5 +1,15 @@
 # DataDome Terraform Provider
 
+## 2.1.0 (2025-02-03)
+
+### BUG FIXES:
+
+- Update dependencies to fix vulnerabilities
+
+### ENHANCEMENTS:
+
+- Add support for [endpoints management](https://docs.datadome.co/docs/endpoints)
+
 ## 2.0.2 (2025-01-15)
 
 ### BUG FIXES:
