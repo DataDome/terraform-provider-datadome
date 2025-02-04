@@ -53,6 +53,7 @@ type Endpoint struct {
 	PathInclusion      *string `json:"pathInclusion,omitempty"`
 	PathExclusion      *string `json:"pathExclusion,omitempty"`
 	UserAgentInclusion *string `json:"userAgentInclusion,omitempty"`
+	Query              *string `json:"query,omitempty"`
 	ResponseFormat     string  `json:"responseFormat"`
 	DetectionEnabled   bool    `json:"detectionEnabled"`
 	ProtectionEnabled  bool    `json:"protectionEnabled"`

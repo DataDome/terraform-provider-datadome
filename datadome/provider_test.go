@@ -578,6 +578,22 @@ resource "datadome_endpoint" "simple" {
 }
 `
 
+const testAccEndpointConfigWithQueryField = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "simple" {
+  cookie_same_site   = "Lax"
+  description        = "This is a test"
+  detection_enabled  = false
+  name               = "test-terraform"
+  protection_enabled = false
+  response_format    = "auto"
+  source             = "Web Browser"
+  traffic_usage      = "Account Creation"
+  query				 = "countrycode:FR"
+}
+`
+
 const testAccEndpointConfigUpdate = `
 provider "datadome" {}
 resource "datadome_endpoint" "simple" {
@@ -796,6 +812,23 @@ resource "datadome_endpoint" "simple" {
   source               = "Web Browser"
   traffic_usage        = "Account Creation"
   user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWrongQuery = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "simple" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "should not be set"
+  query				   = "countrycode:FR"
 }
 `
 
@@ -1110,6 +1143,10 @@ func TestAccEndpointResource_wrongParameters(t *testing.T) {
 			{
 				Config:      testAccEndpointConfigWrongDetectionValue,
 				ExpectError: regexp.MustCompile("the detection must be activated in order to activate the protection"),
+			},
+			{
+				Config:      testAccEndpointConfigWrongQuery,
+				ExpectError: regexp.MustCompile(`"query" must be empty if whether "domain", "path_inclusion", "path_exclusion", or "user_agent_inclusion" is filled`),
 			},
 		},
 	})

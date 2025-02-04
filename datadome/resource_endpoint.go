@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/datadome/terraform-provider/common"
 	dd "github.com/datadome/terraform-provider/datadome-client-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -99,25 +100,31 @@ func resourceEndpoint() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
-				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion"},
+				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion", "query"},
 			},
 			"path_inclusion": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
-				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion"},
+				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion", "query"},
 			},
 			"path_exclusion": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
-				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion"},
+				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion", "query"},
 			},
 			"user_agent_inclusion": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
-				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion"},
+				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion", "query"},
+			},
+			"query": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion", "query"},
 			},
 			"response_format": {
 				Type:     schema.TypeString,
@@ -165,6 +172,7 @@ func resourceEndpoint() *schema.Resource {
 // It raises an error when:
 // - the "traffic_usage" value does not fit with the "source" value
 // - the "protection_enabled" is set to `true` and the "detection_enabled" is set to `false`
+// - the "query" field is not empty and one of "domain", "path_inclusion", "path_exclusion", or "user_agent_inclusion" is not empty either
 func customizeDiffEndpoints(ctx context.Context, data *schema.ResourceDiff, meta interface{}) error {
 	source := data.Get("source").(string)
 	trafficUsage := data.Get("traffic_usage").(string)
@@ -188,6 +196,15 @@ func customizeDiffEndpoints(ctx context.Context, data *schema.ResourceDiff, meta
 		return fmt.Errorf("the detection must be activated in order to activate the protection")
 	}
 
+	_, domainExists := data.GetOk("domain")
+	_, pathExclusionExists := data.GetOk("path_exclusion")
+	_, pathInclusionExists := data.GetOk("path_inclusion")
+	_, userAgentInclusionExists := data.GetOk("user_agent_inclusion")
+	_, queryExists := data.GetOk("query")
+	if queryExists && (domainExists || pathExclusionExists || pathInclusionExists || userAgentInclusionExists) {
+		return fmt.Errorf(`"query" must be empty if whether "domain", "path_inclusion", "path_exclusion", or "user_agent_inclusion" is filled`)
+	}
+
 	return nil
 }
 
@@ -196,42 +213,13 @@ func resourceEndpointCreate(ctx context.Context, data *schema.ResourceData, meta
 	config := meta.(*ProviderConfig)
 	c := config.ClientEndpoint
 
-	var description *string
-	descriptionValue, ok := data.GetOk("description")
-	if ok {
-		descriptionString := descriptionValue.(string)
-		description = &descriptionString
-	}
-	var positionBefore *string
-	positionBeforeValue, ok := data.GetOk("position_before")
-	if ok {
-		positionBeforeString := positionBeforeValue.(string)
-		positionBefore = &positionBeforeString
-	}
-	var domain *string
-	domainValue, ok := data.GetOk("domain")
-	if ok {
-		domainString := domainValue.(string)
-		domain = &domainString
-	}
-	var pathInclusion *string
-	pathInclusionValue, ok := data.GetOk("path_inclusion")
-	if ok {
-		pathInclusionString := pathInclusionValue.(string)
-		pathInclusion = &pathInclusionString
-	}
-	var pathExclusion *string
-	pathExclusionValue, ok := data.GetOk("path_exclusion")
-	if ok {
-		pathExclusionString := pathExclusionValue.(string)
-		pathExclusion = &pathExclusionString
-	}
-	var userAgentInclusion *string
-	userAgentInclusionValue, ok := data.GetOk("user_agent_inclusion")
-	if ok {
-		userAgentInclusionString := userAgentInclusionValue.(string)
-		userAgentInclusion = &userAgentInclusionString
-	}
+	description := common.GetOptionalValue[string](data, "description")
+	positionBefore := common.GetOptionalValue[string](data, "position_before")
+	domain := common.GetOptionalValue[string](data, "domain")
+	pathInclusion := common.GetOptionalValue[string](data, "path_inclusion")
+	pathExclusion := common.GetOptionalValue[string](data, "path_exclusion")
+	userAgentInclusion := common.GetOptionalValue[string](data, "user_agent_inclusion")
+	query := common.GetOptionalValue[string](data, "query")
 
 	newEndpoint := dd.Endpoint{
 		Name:               data.Get("name").(string),
@@ -244,6 +232,7 @@ func resourceEndpointCreate(ctx context.Context, data *schema.ResourceData, meta
 		PathInclusion:      pathInclusion,
 		PathExclusion:      pathExclusion,
 		UserAgentInclusion: userAgentInclusion,
+		Query:              query,
 		ResponseFormat:     data.Get("response_format").(string),
 		DetectionEnabled:   data.Get("detection_enabled").(bool),
 		ProtectionEnabled:  data.Get("protection_enabled").(bool),
@@ -301,6 +290,9 @@ func resourceEndpointRead(ctx context.Context, data *schema.ResourceData, meta i
 	if err = data.Set("user_agent_inclusion", endpoint.UserAgentInclusion); err != nil {
 		return diag.FromErr(err)
 	}
+	if err = data.Set("query", endpoint.Query); err != nil {
+		return diag.FromErr(err)
+	}
 	if err = data.Set("response_format", endpoint.ResponseFormat); err != nil {
 		return diag.FromErr(err)
 	}
@@ -320,42 +312,13 @@ func resourceEndpointUpdate(ctx context.Context, data *schema.ResourceData, meta
 	c := config.ClientEndpoint
 
 	ID := data.Id()
-	var description *string
-	descriptionValue, ok := data.GetOk("description")
-	if ok {
-		descriptionString := descriptionValue.(string)
-		description = &descriptionString
-	}
-	var positionBefore *string
-	positionBeforeValue, ok := data.GetOk("position_before")
-	if ok {
-		positionBeforeString := positionBeforeValue.(string)
-		positionBefore = &positionBeforeString
-	}
-	var domain *string
-	domainValue, ok := data.GetOk("domain")
-	if ok {
-		domainString := domainValue.(string)
-		domain = &domainString
-	}
-	var pathInclusion *string
-	pathInclusionValue, ok := data.GetOk("path_inclusion")
-	if ok {
-		pathInclusionString := pathInclusionValue.(string)
-		pathInclusion = &pathInclusionString
-	}
-	var pathExclusion *string
-	pathExclusionValue, ok := data.GetOk("path_exclusion")
-	if ok {
-		pathExclusionString := pathExclusionValue.(string)
-		pathExclusion = &pathExclusionString
-	}
-	var userAgentInclusion *string
-	userAgentInclusionValue, ok := data.GetOk("user_agent_inclusion")
-	if ok {
-		userAgentInclusionString := userAgentInclusionValue.(string)
-		userAgentInclusion = &userAgentInclusionString
-	}
+	description := common.GetOptionalValue[string](data, "description")
+	positionBefore := common.GetOptionalValue[string](data, "position_before")
+	domain := common.GetOptionalValue[string](data, "domain")
+	pathInclusion := common.GetOptionalValue[string](data, "path_inclusion")
+	pathExclusion := common.GetOptionalValue[string](data, "path_exclusion")
+	userAgentInclusion := common.GetOptionalValue[string](data, "user_agent_inclusion")
+	query := common.GetOptionalValue[string](data, "query")
 
 	newEndpoint := dd.Endpoint{
 		ID:                 &ID,
@@ -369,6 +332,7 @@ func resourceEndpointUpdate(ctx context.Context, data *schema.ResourceData, meta
 		PathInclusion:      pathInclusion,
 		PathExclusion:      pathExclusion,
 		UserAgentInclusion: userAgentInclusion,
+		Query:              query,
 		ResponseFormat:     data.Get("response_format").(string),
 		DetectionEnabled:   data.Get("detection_enabled").(bool),
 		ProtectionEnabled:  data.Get("protection_enabled").(bool),
