@@ -24,7 +24,7 @@ resource "datadome_endpoint" "new" {
   response_format      = "auto"
   detection_enabled    = true
   protection_enabled   = false
-  query                = "url:*api* AND ip:192.168.1.1"
+  query                = "url:*api* AND domain:example.org"
 }
 ```
 
