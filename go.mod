@@ -1,7 +1,6 @@
 module github.com/datadome/terraform-provider
 
-go 1.22.4
-toolchain go1.23.7
+go 1.23.0
 
 require (
 	github.com/datadome/terraform-provider/datadome-client-go v0.0.0
