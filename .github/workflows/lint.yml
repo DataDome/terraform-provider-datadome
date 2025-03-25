@@ -26,6 +26,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
       - uses: dominikh/staticcheck-action@v1.3.1
         with:
+          install-go: false
           version: "2024.1.1"
