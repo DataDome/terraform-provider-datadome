@@ -11,6 +11,25 @@ Manage an endpoint on DataDome dashboard
 
 ## Example Usage
 
+### Usage with query field
+
+```terraform
+resource "datadome_endpoint" "new" {
+  name                 = "new_endpoint"
+  description          = "An example of endpoint"
+  position_before      = "Endpoint-ID"
+  source               = "Web Browser"
+  traffic_usage        = ""
+  cookie_same_site     = "Lax"
+  response_format      = "auto"
+  detection_enabled    = true
+  protection_enabled   = false
+  query                = "url:*api* AND domain:example.org"
+}
+```
+
+### Usage without query field
+
 ```terraform
 resource "datadome_endpoint" "new" {
   name                 = "new_endpoint"
@@ -47,6 +66,7 @@ resource "datadome_endpoint" "new" {
 - `response_format` - (Optional) The response format to use for challenged requests. It only accepts `auto`, `json`, or `html`. When not specified, it defaults to `auto`.
 - `detection_enabled` - (Optional) Determine whether the detection is enabled. Defaults to `true`.
 - `protection_enabled` - (Optional) Determing whether the protection is enabled. Defaults to `false`.
+- `query` - (Optional) The traffic query for the endpoint. For more information refer to the DataDome [documentation](https://docs.datadome.co/docs/syntax-guidelines)
 
 ## Attributes Reference
 

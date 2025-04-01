@@ -578,6 +578,22 @@ resource "datadome_endpoint" "simple" {
 }
 `
 
+const testAccEndpointConfigWithQueryField = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "simple" {
+  cookie_same_site   = "Lax"
+  description        = "This is a test"
+  detection_enabled  = false
+  name               = "test-terraform"
+  protection_enabled = false
+  response_format    = "auto"
+  source             = "Web Browser"
+  traffic_usage      = "Account Creation"
+  query              = "countrycode:FR"
+}
+`
+
 const testAccEndpointConfigUpdate = `
 provider "datadome" {}
 resource "datadome_endpoint" "simple" {
@@ -796,6 +812,23 @@ resource "datadome_endpoint" "simple" {
   source               = "Web Browser"
   traffic_usage        = "Account Creation"
   user_agent_inclusion = "TFTEST"
+}
+`
+
+const testAccEndpointConfigWrongQuery = `
+provider "datadome" {}
+
+resource "datadome_endpoint" "simple" {
+  cookie_same_site     = "Lax"
+  description          = "This is a test"
+  detection_enabled    = false
+  name                 = "test-terraform"
+  protection_enabled   = false
+  response_format      = "auto"
+  source               = "Web Browser"
+  traffic_usage        = "Account Creation"
+  user_agent_inclusion = "should not be set"
+  query                = "countrycode:FR"
 }
 `
 
@@ -1057,6 +1090,38 @@ func TestAccEndpointResource_createWithRegex(t *testing.T) {
 	})
 }
 
+func TestAccEndpointResource_createWithQueryField(t *testing.T) {
+	mockClient := datadome.NewMockClientEndpoint()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientEndpoint: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEndpointConfigWithQueryField,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_endpoint.simple"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "cookie_same_site", "Lax"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "description", "This is a test"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "detection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "protection_enabled", "false"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "response_format", "auto"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "source", "Web Browser"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "traffic_usage", "Account Creation"),
+					resource.TestCheckResourceAttr("datadome_endpoint.simple", "query", "countrycode:FR"),
+				),
+			},
+		},
+	})
+}
+
 // TestAccEndpointResource_wrongParameters tests the creation of an endpoint resource by providing wrong inputs
 func TestAccEndpointResource_wrongParameters(t *testing.T) {
 	mockClient := datadome.NewMockClientEndpoint()
@@ -1110,6 +1175,10 @@ func TestAccEndpointResource_wrongParameters(t *testing.T) {
 			{
 				Config:      testAccEndpointConfigWrongDetectionValue,
 				ExpectError: regexp.MustCompile("the detection must be activated in order to activate the protection"),
+			},
+			{
+				Config:      testAccEndpointConfigWrongQuery,
+				ExpectError: regexp.MustCompile(`"query" must be empty if whether "domain", "path_inclusion", "path_exclusion", or "user_agent_inclusion" is filled`),
 			},
 		},
 	})

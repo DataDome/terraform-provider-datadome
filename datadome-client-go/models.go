@@ -42,17 +42,18 @@ type CustomRule struct {
 
 // Endpoint structure containing the information of an endpoint
 type Endpoint struct {
-	ID                 *string `json:"id,omitempty"`
+	ID                 *string `json:"id"`
 	Name               string  `json:"name"`
-	Description        *string `json:"description,omitempty"`
-	PositionBefore     *string `json:"positionBefore,omitempty"`
+	Description        *string `json:"description"`
+	PositionBefore     *string `json:"positionBefore"`
 	TrafficUsage       string  `json:"trafficUsage"`
 	Source             string  `json:"source"`
 	CookieSameSite     string  `json:"cookieSameSite"`
-	Domain             *string `json:"domain,omitempty"`
-	PathInclusion      *string `json:"pathInclusion,omitempty"`
-	PathExclusion      *string `json:"pathExclusion,omitempty"`
-	UserAgentInclusion *string `json:"userAgentInclusion,omitempty"`
+	Domain             *string `json:"domain"`
+	PathInclusion      *string `json:"pathInclusion"`
+	PathExclusion      *string `json:"pathExclusion"`
+	UserAgentInclusion *string `json:"userAgentInclusion"`
+	Query              *string `json:"query"`
 	ResponseFormat     string  `json:"responseFormat"`
 	DetectionEnabled   bool    `json:"detectionEnabled"`
 	ProtectionEnabled  bool    `json:"protectionEnabled"`
