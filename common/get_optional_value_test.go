@@ -71,3 +71,19 @@ func TestGetOptionalValue_MissingField(t *testing.T) {
 	result := GetOptionalValue[string](data, "optional_field")
 	assert.Nil(t, result)
 }
+
+func TestGetOptionalValue_WrongTypeConversion(t *testing.T) {
+	testSchema := map[string]*schema.Schema{
+		"optional_field": {
+			Type:     schema.TypeInt,
+			Optional: true,
+		},
+	}
+
+	data := schema.TestResourceDataRaw(t, testSchema, map[string]interface{}{
+		"optional_field": 1234,
+	})
+
+	result := GetOptionalValue[string](data, "optional_field")
+	assert.Nil(t, result)
+}

@@ -8,7 +8,10 @@ import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 func GetOptionalValue[T comparable](data *schema.ResourceData, field string) *T {
 	var finalValue *T
 	if value, ok := data.GetOk(field); ok {
-		typedValue := value.(T)
+		typedValue, ok := value.(T)
+		if !ok {
+			return nil
+		}
 		finalValue = &typedValue
 	}
 
