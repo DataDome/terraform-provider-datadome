@@ -1,5 +1,17 @@
 # DataDome Terraform Provider
 
+## 2.2.0 (2025-04-02)
+
+### BUG FIXES:
+
+- Update dependencies to fix vulnerabilities
+- Update `Endpoint` structure to fix update issue
+
+### ENHANCEMENTS:
+
+- Add `query` field for `endpoint` management
+- Upgrade `go` version to `1.23`
+
 ## 2.1.0 (2025-02-03)
 
 ### BUG FIXES:
