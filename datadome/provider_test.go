@@ -590,7 +590,7 @@ resource "datadome_endpoint" "simple" {
   response_format    = "auto"
   source             = "Web Browser"
   traffic_usage      = "Account Creation"
-  query				 = "countrycode:FR"
+  query              = "countrycode:FR"
 }
 `
 
@@ -828,7 +828,7 @@ resource "datadome_endpoint" "simple" {
   source               = "Web Browser"
   traffic_usage        = "Account Creation"
   user_agent_inclusion = "should not be set"
-  query				   = "countrycode:FR"
+  query                = "countrycode:FR"
 }
 `
 
