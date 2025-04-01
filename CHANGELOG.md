@@ -9,7 +9,7 @@
 
 ### ENHANCEMENTS:
 
-- Add `query` field for `endpoint` management
+- Add [`query`](https://docs.datadome.co/docs/endpoints#1-traffic-query) field for `endpoint` management
 - Upgrade `go` version to `1.23`
 
 ## 2.1.0 (2025-02-03)
