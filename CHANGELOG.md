@@ -5,7 +5,7 @@
 ### BUG FIXES:
 
 - Update dependencies to fix vulnerabilities
-- Update `Endpoint` structure to fix update issue
+- Update `Endpoint` structure to fix update issue when fields were omitted from the payload
 
 ### ENHANCEMENTS:
 
