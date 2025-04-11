@@ -1,5 +1,11 @@
 # DataDome Terraform Provider
 
+## 2.2.1 (2025-04-11)
+
+### BUG FIXES:
+
+- Fix the `Update` method of the `ClientCustomRule` structure
+
 ## 2.2.0 (2025-04-02)
 
 ### BUG FIXES:
