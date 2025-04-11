@@ -4,7 +4,7 @@
 
 ### BUG FIXES:
 
-- Fix the `Update` method of the `ClientCustomRule`
+- Fix the `Update` method of the `ClientCustomRule` structure
 
 ## 2.2.0 (2025-04-02)
 
