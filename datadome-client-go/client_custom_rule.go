@@ -159,7 +159,7 @@ func (c *ClientCustomRule) Update(ctx context.Context, params CustomRule) (*Cust
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"PUT",
-		fmt.Sprintf("%s/%d", c.HostURL, params.ID),
+		fmt.Sprintf("%s/%d", c.HostURL, *params.ID),
 		strings.NewReader(string(rb)),
 	)
 	if err != nil {
