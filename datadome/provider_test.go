@@ -223,6 +223,78 @@ resource "datadome_custom_rule" "accConfig" {
 }
 `
 
+const testAccCustomRuleResourceConfigWithDates = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+  enabled		= true
+  activated_at  = "2080-01-31 23:59:59"
+  expired_at    = "2099-12-31 23:59:59"
+}
+`
+
+const testAccCustomRuleResourceConfigWithExpirationDateBeforeNow = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+  enabled		= true
+  expired_at    = "1970-01-01 00:00:00"
+}
+`
+
+const testAccCustomRuleResourceConfigWithActivationDateBeforeNow = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+  enabled		= true
+  expired_at    = "1970-01-01 00:00:00"
+}
+`
+
+const testAccCustomRuleResourceConfigWithExpirationDateBeforeActivationDate = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+  enabled		= true
+  activated_at  = "2099-12-31 23:59:59"
+  expired_at    = "2080-01-31 23:59:59"
+}
+`
+
+const testAccCustomRuleResourceConfigWithWrongDateFormat = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+  enabled		= true
+  expired_at    = "2019-09-26T07:58:30.996+0200"
+}
+`
+
 const testAccCustomRuleResourceConfigEmptyName = `
 provider "datadome" {}
 
@@ -338,6 +410,38 @@ func TestAccCustomRuleResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "endpoint_type", "web"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "priority", "low"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccCustomRuleResource_withDates test the creation and the read of a new custom rule with activation and expiration dates
+func TestAccCustomRuleResource_withDates(t *testing.T) {
+	mockClient := datadome.NewMockClientCustomRule()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCustomRuleResourceConfigWithDates,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "name", "acc-test"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "query", "ip: 192.168.0.1"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "response", "allow"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "endpoint_type", "web"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "priority", "low"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "enabled", "true"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "activated_at", "2080-01-31 23:59:59"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "expired_at", "2099-12-31 23:59:59"),
 				),
 			},
 		},
@@ -496,6 +600,22 @@ func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
 			{
 				Config:      testAccCustomRuleResourceConfigEmptyQuery,
 				ExpectError: regexp.MustCompile(`expected "query" to not be an empty string`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithWrongDateFormat,
+				ExpectError: regexp.MustCompile(`(?s)date '2019-09-26T07:58:30\.996\+0200' does not match the required format.*'YYYY-MM-DD HH:MM:SS'`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithActivationDateBeforeNow,
+				ExpectError: regexp.MustCompile(`date '1970-01-01 00:00:00' must not be in the past`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithExpirationDateBeforeNow,
+				ExpectError: regexp.MustCompile(`date '1970-01-01 00:00:00' must not be in the past`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithExpirationDateBeforeActivationDate,
+				ExpectError: regexp.MustCompile(`expired_at date must be after activated_at date`),
 			},
 		},
 	})

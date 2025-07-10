@@ -19,6 +19,8 @@ resource "datadome_custom_rule" "new_custom_rule" {
   response      = "allow"
   endpoint_type = "web"
   priority      = "normal"
+  activated_at  = "2030-01-31 23:59:59"
+  expired_at    = "2050-01-31 23:59:59"
 }
 
 resource "datadome_endpoint" "new_endpoint" {
