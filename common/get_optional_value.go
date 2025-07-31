@@ -6,7 +6,7 @@ import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 // If the fields is set, it returns a pointer of this field.
 // Otherwise, it returns a nil pointer.
 func GetOptionalValue[T comparable](data *schema.ResourceData, field string) *T {
-	value, ok := data.GetOkExists(field)
+	value, ok := data.GetOkExists(field) //nolint:staticcheck
 	if !ok {
 		return nil
 	}

@@ -182,6 +182,7 @@ func TestGetOptionalValue_ZeroValues(t *testing.T) {
 		})
 	}
 }
+
 func TestGetOptionalValue_NullValues(t *testing.T) {
 	tests := []struct {
 		name       string
