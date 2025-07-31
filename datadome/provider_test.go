@@ -232,7 +232,7 @@ resource "datadome_custom_rule" "accConfig" {
   response      = "allow"
   endpoint_type = "web"
   priority      = "low"
-  enabled		= true
+  enabled       = true
   activated_at  = "2080-01-31 23:59:59"
   expired_at    = "2099-12-31 23:59:59"
 }
@@ -247,7 +247,7 @@ resource "datadome_custom_rule" "accConfig" {
   response      = "allow"
   endpoint_type = "web"
   priority      = "low"
-  enabled		= true
+  enabled       = true
   expired_at    = "1970-01-01 00:00:00"
 }
 `
@@ -261,7 +261,7 @@ resource "datadome_custom_rule" "accConfig" {
   response      = "allow"
   endpoint_type = "web"
   priority      = "low"
-  enabled		= true
+  enabled       = true
   expired_at    = "1970-01-01 00:00:00"
 }
 `
@@ -275,7 +275,7 @@ resource "datadome_custom_rule" "accConfig" {
   response      = "allow"
   endpoint_type = "web"
   priority      = "low"
-  enabled		= true
+  enabled       = true
   activated_at  = "2099-12-31 23:59:59"
   expired_at    = "2080-01-31 23:59:59"
 }
@@ -290,7 +290,7 @@ resource "datadome_custom_rule" "accConfig" {
   response      = "allow"
   endpoint_type = "web"
   priority      = "low"
-  enabled		= true
+  enabled       = true
   expired_at    = "2019-09-26T07:58:30.996+0200"
 }
 `

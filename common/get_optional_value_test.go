@@ -129,8 +129,6 @@ func TestGetOptionalValue_ZeroValues(t *testing.T) {
 		{
 			name:       "zero string",
 			schemaType: schema.TypeString,
-			value:      "",
-			expected:   "",
 		},
 		{
 			name:       "zero int",
