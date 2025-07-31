@@ -104,6 +104,7 @@ func resourceCustomRule() *schema.Resource {
 			"enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 			"activated_at": {
 				Type:     schema.TypeString,
