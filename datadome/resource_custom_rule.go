@@ -113,7 +113,7 @@ func resourceCustomRule() *schema.Resource {
 					var diags diag.Diagnostics
 					value := v.(string)
 					if value != "" {
-						parsedTime, err := time.Parse("2006-01-02 15:04:05", value)
+						parsedTime, err := time.Parse(time.DateTime, value)
 						if err != nil {
 							diag := diag.Diagnostic{
 								Severity: diag.Error,
@@ -142,7 +142,7 @@ func resourceCustomRule() *schema.Resource {
 					var diags diag.Diagnostics
 					value := v.(string)
 					if value != "" {
-						parsedTime, err := time.Parse("2006-01-02 15:04:05", value)
+						parsedTime, err := time.Parse(time.DateTime, value)
 						if err != nil {
 							diag := diag.Diagnostic{
 								Severity: diag.Error,
@@ -186,8 +186,8 @@ func customizeDiffCustomRules(ctx context.Context, data *schema.ResourceDiff, me
 	expiredAt := data.Get("expired_at").(string)
 
 	if activatedAt != "" && expiredAt != "" {
-		activatedTime, _ := time.Parse("2006-01-02 15:04:05", activatedAt)
-		expiredTime, _ := time.Parse("2006-01-02 15:04:05", expiredAt)
+		activatedTime, _ := time.Parse(time.DateTime, activatedAt)
+		expiredTime, _ := time.Parse(time.DateTime, expiredAt)
 		if activatedTime.After(expiredTime) {
 			return fmt.Errorf("expired_at date must be after activated_at date")
 		}
