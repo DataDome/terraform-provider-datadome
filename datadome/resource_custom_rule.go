@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/datadome/terraform-provider/common"
 	dd "github.com/datadome/terraform-provider/datadome-client-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -103,7 +104,65 @@ func resourceCustomRule() *schema.Resource {
 			"enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+				ForceNew: true,
+			},
+			"activated_at": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					var diags diag.Diagnostics
+					value := v.(string)
+					if value != "" {
+						parsedTime, err := time.Parse(time.DateTime, value)
+						if err != nil {
+							diag := diag.Diagnostic{
+								Severity: diag.Error,
+								Summary:  "invalid date format",
+								Detail:   fmt.Sprintf("date '%s' does not match the required format 'YYYY-MM-DD HH:MM:SS'", value),
+							}
+							diags = append(diags, diag)
+						} else {
+							if parsedTime.Before(time.Now().UTC()) {
+								diag := diag.Diagnostic{
+									Severity: diag.Error,
+									Summary:  "invalid date",
+									Detail:   fmt.Sprintf("date '%s' must not be in the past", value),
+								}
+								diags = append(diags, diag)
+							}
+						}
+					}
+					return diags
+				},
+			},
+			"expired_at": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					var diags diag.Diagnostics
+					value := v.(string)
+					if value != "" {
+						parsedTime, err := time.Parse(time.DateTime, value)
+						if err != nil {
+							diag := diag.Diagnostic{
+								Severity: diag.Error,
+								Summary:  "invalid date format",
+								Detail:   fmt.Sprintf("date '%s' does not match the required format 'YYYY-MM-DD HH:MM:SS'", value),
+							}
+							diags = append(diags, diag)
+						} else {
+							if parsedTime.Before(time.Now().UTC()) {
+								diag := diag.Diagnostic{
+									Severity: diag.Error,
+									Summary:  "invalid date",
+									Detail:   fmt.Sprintf("date '%s' must not be in the past", value),
+								}
+								diags = append(diags, diag)
+							}
+						}
+					}
+					return diags
+				},
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -115,7 +174,26 @@ func resourceCustomRule() *schema.Resource {
 			Update: schema.DefaultTimeout(1 * time.Minute),
 			Delete: schema.DefaultTimeout(1 * time.Minute),
 		},
+		CustomizeDiff: customizeDiffCustomRules,
 	}
+}
+
+// customizeDiffCustomRules applies additional verifications regarding the fields of the custom rule
+// It raises error when:
+// - expired_at is before activated_at
+func customizeDiffCustomRules(ctx context.Context, data *schema.ResourceDiff, meta interface{}) error {
+	activatedAt := data.Get("activated_at").(string)
+	expiredAt := data.Get("expired_at").(string)
+
+	if activatedAt != "" && expiredAt != "" {
+		activatedTime, _ := time.Parse(time.DateTime, activatedAt)
+		expiredTime, _ := time.Parse(time.DateTime, expiredAt)
+		if activatedTime.After(expiredTime) {
+			return fmt.Errorf("expired_at date must be after activated_at date")
+		}
+	}
+
+	return nil
 }
 
 // resourceCustomRuleCreate is used to create new custom rule
@@ -126,13 +204,19 @@ func resourceCustomRuleCreate(ctx context.Context, data *schema.ResourceData, me
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	activatedAt := common.GetOptionalValue[string](data, "activated_at")
+	enabled := common.GetOptionalValue[bool](data, "enabled")
+	expiredAt := common.GetOptionalValue[string](data, "expired_at")
+
 	newCustomRule := dd.CustomRule{
 		Name:         data.Get("name").(string),
 		Response:     data.Get("response").(string),
 		Query:        data.Get("query").(string),
 		EndpointType: data.Get("endpoint_type").(string),
 		Priority:     data.Get("priority").(string),
-		Enabled:      data.Get("enabled").(bool),
+		Enabled:      enabled,
+		ActivatedAt:  activatedAt,
+		ExpiredAt:    expiredAt,
 	}
 
 	id, err := c.Create(ctx, newCustomRule)
@@ -180,6 +264,12 @@ func resourceCustomRuleRead(ctx context.Context, data *schema.ResourceData, meta
 	if err = data.Set("enabled", customRule.Enabled); err != nil {
 		return diag.FromErr(err)
 	}
+	if err = data.Set("activated_at", customRule.ActivatedAt); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = data.Set("expired_at", customRule.ExpiredAt); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }
@@ -194,6 +284,10 @@ func resourceCustomRuleUpdate(ctx context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
+	activatedAt := common.GetOptionalValue[string](data, "activated_at")
+	enabled := common.GetOptionalValue[bool](data, "enabled")
+	expiredAt := common.GetOptionalValue[string](data, "expired_at")
+
 	newCustomRule := dd.CustomRule{
 		ID:           &id,
 		Name:         data.Get("name").(string),
@@ -201,7 +295,9 @@ func resourceCustomRuleUpdate(ctx context.Context, data *schema.ResourceData, me
 		Query:        data.Get("query").(string),
 		EndpointType: data.Get("endpoint_type").(string),
 		Priority:     data.Get("priority").(string),
-		Enabled:      data.Get("enabled").(bool),
+		Enabled:      enabled,
+		ActivatedAt:  activatedAt,
+		ExpiredAt:    expiredAt,
 	}
 
 	o, err := c.Update(ctx, newCustomRule)

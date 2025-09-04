@@ -31,13 +31,15 @@ type CustomRules struct {
 
 // CustomRule structure containing the information of a custom rule
 type CustomRule struct {
-	ID           *int   `json:"id"`
-	Name         string `json:"rule_name"`
-	Response     string `json:"rule_response"`
-	Query        string `json:"query"`
-	EndpointType string `json:"endpoint_type"`
-	Priority     string `json:"rule_priority"`
-	Enabled      bool   `json:"rule_enabled"`
+	ID           *int    `json:"id"`
+	Name         string  `json:"rule_name"`
+	Response     string  `json:"rule_response"`
+	Query        string  `json:"query"`
+	EndpointType string  `json:"endpoint_type"`
+	Priority     string  `json:"rule_priority"`
+	Enabled      *bool   `json:"rule_enabled,omitempty"`
+	ActivatedAt  *string `json:"activated_at,omitempty"`
+	ExpiredAt    *string `json:"expired_at,omitempty"`
 }
 
 // Endpoint structure containing the information of an endpoint
