@@ -2,6 +2,10 @@
 
 ## 2.3.0 (2025-09-04)
 
+### BUG FIXES:
+
+- Update dependencies to fix vulnerabilities
+
 ### ENHANCEMENTS:
 
 - Add support of activation and expiration dates for custom rules
