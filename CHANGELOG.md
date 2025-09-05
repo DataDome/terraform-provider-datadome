@@ -1,5 +1,15 @@
 # DataDome Terraform Provider
 
+## 2.3.0 (2025-09-04)
+
+### BUG FIXES:
+
+- Update dependencies to fix vulnerabilities
+
+### ENHANCEMENTS:
+
+- Add support of activation and expiration dates for custom rules
+
 ## 2.2.2 (2025-05-19)
 
 ### BUG FIXES:
