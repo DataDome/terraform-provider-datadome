@@ -213,13 +213,13 @@ func resourceEndpointCreate(ctx context.Context, data *schema.ResourceData, meta
 	config := meta.(*ProviderConfig)
 	c := config.ClientEndpoint
 
-	description := common.GetOptionalValue[string](data, "description")
-	positionBefore := common.GetOptionalValue[string](data, "position_before")
-	domain := common.GetOptionalValue[string](data, "domain")
-	pathInclusion := common.GetOptionalValue[string](data, "path_inclusion")
-	pathExclusion := common.GetOptionalValue[string](data, "path_exclusion")
-	userAgentInclusion := common.GetOptionalValue[string](data, "user_agent_inclusion")
-	query := common.GetOptionalValue[string](data, "query")
+	description := common.GetOptionalValueWithoutZeroValue[string](data, "description")
+	positionBefore := common.GetOptionalValueWithoutZeroValue[string](data, "position_before")
+	domain := common.GetOptionalValueWithoutZeroValue[string](data, "domain")
+	pathInclusion := common.GetOptionalValueWithoutZeroValue[string](data, "path_inclusion")
+	pathExclusion := common.GetOptionalValueWithoutZeroValue[string](data, "path_exclusion")
+	userAgentInclusion := common.GetOptionalValueWithoutZeroValue[string](data, "user_agent_inclusion")
+	query := common.GetOptionalValueWithoutZeroValue[string](data, "query")
 
 	newEndpoint := dd.Endpoint{
 		Name:               data.Get("name").(string),
@@ -312,13 +312,13 @@ func resourceEndpointUpdate(ctx context.Context, data *schema.ResourceData, meta
 	c := config.ClientEndpoint
 
 	ID := data.Id()
-	description := common.GetOptionalValue[string](data, "description")
-	positionBefore := common.GetOptionalValue[string](data, "position_before")
-	domain := common.GetOptionalValue[string](data, "domain")
-	pathInclusion := common.GetOptionalValue[string](data, "path_inclusion")
-	pathExclusion := common.GetOptionalValue[string](data, "path_exclusion")
-	userAgentInclusion := common.GetOptionalValue[string](data, "user_agent_inclusion")
-	query := common.GetOptionalValue[string](data, "query")
+	description := common.GetOptionalValueWithoutZeroValue[string](data, "description")
+	positionBefore := common.GetOptionalValueWithoutZeroValue[string](data, "position_before")
+	domain := common.GetOptionalValueWithoutZeroValue[string](data, "domain")
+	pathInclusion := common.GetOptionalValueWithoutZeroValue[string](data, "path_inclusion")
+	pathExclusion := common.GetOptionalValueWithoutZeroValue[string](data, "path_exclusion")
+	userAgentInclusion := common.GetOptionalValueWithoutZeroValue[string](data, "user_agent_inclusion")
+	query := common.GetOptionalValueWithoutZeroValue[string](data, "query")
 
 	newEndpoint := dd.Endpoint{
 		ID:                 &ID,

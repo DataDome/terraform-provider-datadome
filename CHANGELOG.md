@@ -1,5 +1,11 @@
 # DataDome Terraform Provider
 
+## 2.3.1 (2025-10-20)
+
+### BUG FIXES:
+
+- Fix update issue for `endpoint` resource with optional fields set to empty strings
+
 ## 2.3.0 (2025-09-04)
 
 ### BUG FIXES:

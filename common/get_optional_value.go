@@ -19,3 +19,18 @@ func GetOptionalValue[T comparable](data *schema.ResourceData, field string) *T 
 
 	return &typedValue
 }
+
+// GetOptionalValueWithoutZeroValue is a generic function that retrieve the expected field's value by its name.
+// If the fields is set and not equal to the zero value of its type, it returns a pointer of this field.
+// Otherwise, it returns a nil pointer.
+func GetOptionalValueWithoutZeroValue[T comparable](data *schema.ResourceData, field string) *T {
+	var finalValue *T
+	if value, ok := data.GetOk(field); ok {
+		typedValue, ok := value.(T)
+		if !ok {
+			return nil
+		}
+		finalValue = &typedValue
+	}
+	return finalValue
+}
