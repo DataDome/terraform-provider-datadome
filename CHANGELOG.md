@@ -4,7 +4,7 @@
 
 ### BUG FIXES:
 
-- Fix issue on update `endpoint` resource with optional fields set to empty strings
+- Fix issue when updating `endpoint` resource with optional fields set to empty strings
 
 ## 2.3.0 (2025-09-04)
 
