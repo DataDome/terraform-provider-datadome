@@ -227,3 +227,136 @@ func TestGetOptionalValue_NullValues(t *testing.T) {
 		})
 	}
 }
+
+func TestGetOptionalValueWithoutZeroValue_String(t *testing.T) {
+	testSchema := map[string]*schema.Schema{
+		"optional_field": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+	}
+
+	data := schema.TestResourceDataRaw(t, testSchema, map[string]interface{}{
+		"optional_field": "hello",
+	})
+
+	result := GetOptionalValueWithoutZeroValue[string](data, "optional_field")
+	assert.NotNil(t, result)
+	assert.Equal(t, "hello", *result)
+}
+
+func TestGetOptionalValueWithoutZeroValue_Int(t *testing.T) {
+	testSchema := map[string]*schema.Schema{
+		"optional_field": {
+			Type:     schema.TypeInt,
+			Optional: true,
+		},
+	}
+
+	data := schema.TestResourceDataRaw(t, testSchema, map[string]interface{}{
+		"optional_field": 1234,
+	})
+
+	result := GetOptionalValueWithoutZeroValue[int](data, "optional_field")
+	assert.NotNil(t, result)
+	assert.Equal(t, 1234, *result)
+}
+
+func TestGetOptionalValueWithoutZeroValue_Bool(t *testing.T) {
+	testSchema := map[string]*schema.Schema{
+		"optional_field": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
+	}
+
+	data := schema.TestResourceDataRaw(t, testSchema, map[string]interface{}{
+		"optional_field": true,
+	})
+
+	result := GetOptionalValueWithoutZeroValue[bool](data, "optional_field")
+	assert.NotNil(t, result)
+	assert.Equal(t, true, *result)
+}
+
+func TestGetOptionalValueWithoutZeroValue_MissingField(t *testing.T) {
+	testSchema := map[string]*schema.Schema{
+		"optional_field": {
+			Type:     schema.TypeInt,
+			Optional: true,
+		},
+	}
+
+	data := schema.TestResourceDataRaw(t, testSchema, map[string]interface{}{})
+
+	result := GetOptionalValueWithoutZeroValue[string](data, "optional_field")
+	assert.Nil(t, result)
+}
+
+func TestGetOptionalValueWithoutZeroValue_WrongTypeConversion(t *testing.T) {
+	testSchema := map[string]*schema.Schema{
+		"optional_field": {
+			Type:     schema.TypeInt,
+			Optional: true,
+		},
+	}
+
+	data := schema.TestResourceDataRaw(t, testSchema, map[string]interface{}{
+		"optional_field": 1234,
+	})
+
+	result := GetOptionalValueWithoutZeroValue[string](data, "optional_field")
+	assert.Nil(t, result)
+}
+
+func TestGetOptionalValueWithoutZeroValue_ZeroValues(t *testing.T) {
+	tests := []struct {
+		name       string
+		schemaType schema.ValueType
+		value      interface{}
+		expected   interface{}
+	}{
+		{
+			name:       "zero string",
+			schemaType: schema.TypeString,
+			value:      "",
+		},
+		{
+			name:       "zero int",
+			schemaType: schema.TypeInt,
+			value:      0,
+		},
+		{
+			name:       "zero bool",
+			schemaType: schema.TypeBool,
+			value:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSchema := map[string]*schema.Schema{
+				"optional_field": {
+					Type:     tt.schemaType,
+					Optional: true,
+				},
+			}
+
+			data := schema.TestResourceDataRaw(t, testSchema, map[string]interface{}{
+				"optional_field": tt.value,
+			})
+
+			switch tt.schemaType {
+			case schema.TypeString:
+				result := GetOptionalValueWithoutZeroValue[string](data, "optional_field")
+				assert.Nil(t, result)
+			case schema.TypeInt:
+				result := GetOptionalValueWithoutZeroValue[int](data, "optional_field")
+				assert.Nil(t, result)
+			case schema.TypeBool:
+				result := GetOptionalValueWithoutZeroValue[bool](data, "optional_field")
+				assert.Nil(t, result)
+			}
+		})
+	}
+}
