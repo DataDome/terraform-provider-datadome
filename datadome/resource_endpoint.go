@@ -43,14 +43,14 @@ func resourceEndpoint() *schema.Resource {
 				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
 					var diags diag.Diagnostics
 					value := v.(string)
-					if !(value == "Account Creation" ||
-						value == "Cart" ||
-						value == "Form" ||
-						value == "Forms" ||
-						value == "General" ||
-						value == "Login" ||
-						value == "Payment" ||
-						value == "Rss") {
+					if value != "Account Creation" &&
+						value != "Cart" &&
+						value != "Form" &&
+						value != "Forms" &&
+						value != "General" &&
+						value != "Login" &&
+						value != "Payment" &&
+						value != "Rss" {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
@@ -67,7 +67,7 @@ func resourceEndpoint() *schema.Resource {
 				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
 					var diags diag.Diagnostics
 					value := v.(string)
-					if !(value == "Api" || value == "Mobile App" || value == "Web Browser") {
+					if value != "Api" && value != "Mobile App" && value != "Web Browser" {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
@@ -84,7 +84,7 @@ func resourceEndpoint() *schema.Resource {
 				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
 					var diags diag.Diagnostics
 					value := v.(string)
-					if !(value == "Lax" || value == "Strict" || value == "None") {
+					if value != "Lax" && value != "Strict" && value != "None" {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
@@ -132,7 +132,7 @@ func resourceEndpoint() *schema.Resource {
 				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
 					var diags diag.Diagnostics
 					value := v.(string)
-					if !(value == "json" || value == "html" || value == "auto") {
+					if value != "json" && value != "html" && value != "auto" {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
