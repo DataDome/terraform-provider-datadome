@@ -1,6 +1,5 @@
 package datadome
 
-
 // HttpResponse from the DataDome's API
 type HttpResponse struct {
 	Data    interface{} `json:"data"`
