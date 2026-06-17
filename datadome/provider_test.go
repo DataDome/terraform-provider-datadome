@@ -708,9 +708,9 @@ resource "datadome_custom_rule" "accConfig" {
 
   policy_options {
     rate_limit {
-      applies_to              = "ip"
-      threshold               = 100
-      time_frame              = "1h"
+      applies_to               = "ip"
+      threshold                = 100
+      time_frame               = "15m"
       response_after_threshold = "block"
     }
   }
@@ -899,7 +899,7 @@ func TestAccCustomRuleResource_withRateLimit(t *testing.T) {
 					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.applies_to", "ip"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.threshold", "100"),
-					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.time_frame", "1h"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.time_frame", "15m"),
 					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.response_after_threshold", "block"),
 				),
 			},
@@ -934,6 +934,73 @@ func TestAccCustomRuleResource_withTimeBox(t *testing.T) {
 	})
 }
 
+const testAccCustomRuleResourceConfigWithOverriddenBotAndNonAllTraffic = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  overridden_bot {
+    uuid = "550e8400-e29b-41d4-a716-446655440000"
+  }
+
+  policy_options {
+    rate_limit {
+      applies_to               = "ip"
+      threshold                = 100
+      time_frame               = "1h"
+      response_after_threshold = "block"
+    }
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithAllTrafficAndForbiddenTimeFrame = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    rate_limit {
+      applies_to               = "all_traffic"
+      threshold                = 100
+      time_frame               = "15m"
+      response_after_threshold = "block"
+    }
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithIpAndForbiddenTimeFrame = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    rate_limit {
+      applies_to               = "ip"
+      threshold                = 100
+      time_frame               = "1d"
+      response_after_threshold = "block"
+    }
+  }
+}
+`
+
 // TestAccCustomRuleResource_wrongPolicyParameters tests validation errors for policy_options fields
 func TestAccCustomRuleResource_wrongPolicyParameters(t *testing.T) {
 	mockClient := datadome.NewMockClientCustomRule()
@@ -967,6 +1034,18 @@ func TestAccCustomRuleResource_wrongPolicyParameters(t *testing.T) {
 			{
 				Config:      testAccCustomRuleResourceConfigWithBothPolicies,
 				ExpectError: regexp.MustCompile(`Invalid combination of arguments`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithOverriddenBotAndNonAllTraffic,
+				ExpectError: regexp.MustCompile(`rate_limit\.applies_to must be "all_traffic" when overridden_bot is set`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithAllTrafficAndForbiddenTimeFrame,
+				ExpectError: regexp.MustCompile(`rate_limit\.time_frame must be "1h" or "1d" when applies_to is "all_traffic"`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithIpAndForbiddenTimeFrame,
+				ExpectError: regexp.MustCompile(`rate_limit\.time_frame must be "1m", "15m", or "4h" when applies_to is "ip"`),
 			},
 		},
 	})

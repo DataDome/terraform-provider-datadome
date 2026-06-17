@@ -68,7 +68,7 @@ type TimeBoxOptions struct {
 
 // RateLimitOptions triggers an alternative response once a request threshold is
 // exceeded within a time window.
-type datadome/resource_custom_rule.go struct {
+type RateLimitOptions struct {
 	AppliesTo              string `json:"applies_to"`
 	Threshold              int    `json:"threshold"`
 	TimeFrame              string `json:"time_frame"`

@@ -259,9 +259,12 @@ func resourceCustomRule() *schema.Resource {
 	}
 }
 
-// customizeDiffCustomRules applies additional verifications regarding the fields of the custom rule
-// It raises error when:
+// customizeDiffCustomRules applies additional verifications regarding the fields of the custom rule.
+// It raises an error when:
 // - expired_at is before activated_at
+// - overridden_bot is set and rate_limit.applies_to is not "all_traffic"
+// - rate_limit.applies_to is "all_traffic" and time_frame is not "1h" or "1d"
+// - rate_limit.applies_to is "ip" or "session" and time_frame is not "1m", "15m", or "4h"
 func customizeDiffCustomRules(ctx context.Context, data *schema.ResourceDiff, meta interface{}) error {
 	activatedAt := data.Get("activated_at").(string)
 	expiredAt := data.Get("expired_at").(string)
@@ -271,6 +274,32 @@ func customizeDiffCustomRules(ctx context.Context, data *schema.ResourceDiff, me
 		expiredTime, _ := time.Parse(time.DateTime, expiredAt)
 		if activatedTime.After(expiredTime) {
 			return fmt.Errorf("expired_at date must be after activated_at date")
+		}
+	}
+
+	rlRaw, hasRateLimit := data.GetOk("policy_options.0.rate_limit.0.applies_to")
+	if !hasRateLimit {
+		return nil
+	}
+	appliesTo := rlRaw.(string)
+	timeFrame := data.Get("policy_options.0.rate_limit.0.time_frame").(string)
+
+	overriddenBotRaw, hasOverriddenBot := data.GetOk("overridden_bot")
+	if hasOverriddenBot {
+		list := overriddenBotRaw.([]interface{})
+		if len(list) > 0 && appliesTo != "all_traffic" {
+			return fmt.Errorf("rate_limit.applies_to must be \"all_traffic\" when overridden_bot is set")
+		}
+	}
+
+	switch appliesTo {
+	case "all_traffic":
+		if timeFrame != "1h" && timeFrame != "1d" {
+			return fmt.Errorf("rate_limit.time_frame must be \"1h\" or \"1d\" when applies_to is \"all_traffic\", got %q", timeFrame)
+		}
+	case "ip", "session":
+		if timeFrame != "1m" && timeFrame != "15m" && timeFrame != "4h" {
+			return fmt.Errorf("rate_limit.time_frame must be \"1m\", \"15m\", or \"4h\" when applies_to is %q, got %q", appliesTo, timeFrame)
 		}
 	}
 
