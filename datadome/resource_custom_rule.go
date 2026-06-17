@@ -285,7 +285,7 @@ func expandPolicyOptions(data *schema.ResourceData) *dd.PolicyOptions {
 		return nil
 	}
 	list := raw.([]interface{})
-	if len(list) == 0 {datadome/provider_test.go
+	if len(list) == 0 {
 		return nil
 	}
 	block := list[0].(map[string]interface{})

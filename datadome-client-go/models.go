@@ -1,6 +1,5 @@
 package datadome
 
-import "encoding/json"
 
 // HttpResponse from the DataDome's API
 type HttpResponse struct {
@@ -47,45 +46,29 @@ type CustomRule struct {
 }
 
 // OverriddenBot identifies a Verified Bot or AI Agent that the custom rule applies to.
-// On writes the API expects a bare UUID string; on reads it returns an object {uuid, name}.
-// The custom MarshalJSON / UnmarshalJSON bridge that asymmetry transparently.
 type OverriddenBot struct {
 	UUID string `json:"uuid"`
 	Name string `json:"name"`
 }
 
-// MarshalJSON emits a bare UUID string to satisfy the write schema.
-func (o OverriddenBot) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.UUID)
-}
-
-// UnmarshalJSON accepts either a UUID string (write echo) or an object {uuid, name} (read schema).
-func (o *OverriddenBot) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err == nil {
-		o.UUID = s
-		return nil
-	}
-	type alias OverriddenBot
-	var a alias
-	if err := json.Unmarshal(data, &a); err != nil {
-		return err
-	}
-	*o = OverriddenBot(a)
-	return nil
-}
-
+// PolicyOptions holds an optional rate-limit or time-box policy for a custom rule.
+// At most one of TimeBox or RateLimit may be set.
+// Only valid when the rule response is "allow" or "intent_based".
 type PolicyOptions struct {
 	TimeBox   *TimeBoxOptions   `json:"time_box,omitempty"`
 	RateLimit *RateLimitOptions `json:"rate_limit,omitempty"`
 }
 
+// TimeBoxOptions restricts a rule to specific hours of the week, applying an
+// alternative response outside the authorized window.
 type TimeBoxOptions struct {
 	AuthorizedHoursOfTheWeek []int  `json:"authorized_hours_of_the_week"`
 	ResponseOutsideTimeBox   string `json:"response_outside_time_box"`
 }
 
-type RateLimitOptions struct {
+// RateLimitOptions triggers an alternative response once a request threshold is
+// exceeded within a time window.
+type datadome/resource_custom_rule.go struct {
 	AppliesTo              string `json:"applies_to"`
 	Threshold              int    `json:"threshold"`
 	TimeFrame              string `json:"time_frame"`
