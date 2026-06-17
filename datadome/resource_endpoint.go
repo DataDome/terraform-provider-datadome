@@ -183,8 +183,7 @@ func customizeDiffEndpoints(ctx context.Context, data *schema.ResourceDiff, meta
 		if trafficUsage != "General" {
 			return fmt.Errorf(`expected "traffic_usage" to be one of {%s}, got %q`, strings.Join(expectedTrafficUsage, ", "), trafficUsage)
 		}
-	case "Mobile App":
-	case "Agentic Protocol":
+	case "Mobile App", "Agentic Protocol":
 		expectedTrafficUsage := []string{"General", "Login", "Payment", "Cart", "Forms", "Account Creation"}
 		if trafficUsage != "General" && trafficUsage != "Login" && trafficUsage != "Payment" && trafficUsage != "Cart" && trafficUsage != "Forms" && trafficUsage != "Account Creation" {
 			return fmt.Errorf(`expected "traffic_usage" to be one of {%s}, got %q`, strings.Join(expectedTrafficUsage, ", "), trafficUsage)
