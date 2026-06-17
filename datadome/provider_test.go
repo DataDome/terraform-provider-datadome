@@ -678,6 +678,300 @@ func TestAccCustomRuleResource_updateAlreadyExists(t *testing.T) {
 	})
 }
 
+// Config consts for overridden_bot and policy_options tests
+
+const testAccCustomRuleResourceConfigWithOverriddenBot = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  overridden_bot {
+    uuid = "550e8400-e29b-41d4-a716-446655440000"
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithRateLimit = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    rate_limit {
+      applies_to              = "ip"
+      threshold               = 100
+      time_frame              = "1h"
+      response_after_threshold = "block"
+    }
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithTimeBox = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    time_box {
+      authorized_hours_of_the_week = [9, 10, 11, 12, 13, 14, 15, 16, 17]
+      response_outside_time_box    = "block"
+    }
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithInvalidUUID = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  overridden_bot {
+    uuid = "not-a-uuid"
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithInvalidThreshold = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    rate_limit {
+      applies_to              = "ip"
+      threshold               = 0
+      time_frame              = "1h"
+      response_after_threshold = "block"
+    }
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithInvalidTimeFrame = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    rate_limit {
+      applies_to              = "ip"
+      threshold               = 100
+      time_frame              = "2h"
+      response_after_threshold = "block"
+    }
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithInvalidHour = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    time_box {
+      authorized_hours_of_the_week = [168]
+      response_outside_time_box    = "block"
+    }
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithBothPolicies = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "allow"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    rate_limit {
+      applies_to              = "ip"
+      threshold               = 100
+      time_frame              = "1h"
+      response_after_threshold = "block"
+    }
+    time_box {
+      authorized_hours_of_the_week = [9, 10]
+      response_outside_time_box    = "block"
+    }
+  }
+}
+`
+
+// TestAccCustomRuleResource_withOverriddenBot tests creation with a valid overridden_bot UUID and verifies both uuid and name are read back
+func TestAccCustomRuleResource_withOverriddenBot(t *testing.T) {
+	mockClient := datadome.NewMockClientCustomRule()
+
+	mockClient.ReadFunc = func(ctx context.Context, id int) (*datadome.CustomRule, error) {
+		return &datadome.CustomRule{
+			ID:           &id,
+			Name:         "acc-test",
+			Response:     "allow",
+			Query:        "ip: 192.168.0.1",
+			EndpointType: "web",
+			Priority:     "low",
+			OverriddenBot: &datadome.OverriddenBot{
+				UUID: "550e8400-e29b-41d4-a716-446655440000",
+				Name: "My Test Bot",
+			},
+		}, nil
+	}
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCustomRuleResourceConfigWithOverriddenBot,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "overridden_bot.0.uuid", "550e8400-e29b-41d4-a716-446655440000"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "overridden_bot.0.name", "My Test Bot"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccCustomRuleResource_withRateLimit tests creation with a rate_limit policy_options block
+func TestAccCustomRuleResource_withRateLimit(t *testing.T) {
+	mockClient := datadome.NewMockClientCustomRule()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCustomRuleResourceConfigWithRateLimit,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.applies_to", "ip"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.threshold", "100"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.time_frame", "1h"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.rate_limit.0.response_after_threshold", "block"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccCustomRuleResource_withTimeBox tests creation with a time_box policy_options block
+func TestAccCustomRuleResource_withTimeBox(t *testing.T) {
+	mockClient := datadome.NewMockClientCustomRule()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCustomRuleResourceConfigWithTimeBox,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResourceExists("datadome_custom_rule.accConfig"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.time_box.0.response_outside_time_box", "block"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.time_box.0.authorized_hours_of_the_week.#", "9"),
+					resource.TestCheckResourceAttr("datadome_custom_rule.accConfig", "policy_options.0.time_box.0.authorized_hours_of_the_week.0", "9"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccCustomRuleResource_wrongPolicyParameters tests validation errors for policy_options fields
+func TestAccCustomRuleResource_wrongPolicyParameters(t *testing.T) {
+	mockClient := datadome.NewMockClientCustomRule()
+
+	testAccProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return &ProviderConfig{
+			ClientCustomRule: mockClient,
+		}, nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccResourcePreCheck(t) },
+		ProviderFactories: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCustomRuleResourceConfigWithInvalidUUID,
+				ExpectError: regexp.MustCompile(`expected .* to be a valid UUID`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithInvalidThreshold,
+				ExpectError: regexp.MustCompile(`expected .* to be at least \(1\)`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithInvalidTimeFrame,
+				ExpectError: regexp.MustCompile(`expected .* to be one of \["1m" "15m" "1h" "4h" "1d"\]`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithInvalidHour,
+				ExpectError: regexp.MustCompile(`expected .* to be in the range \(0 - 167\)`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithBothPolicies,
+				ExpectError: regexp.MustCompile(`Invalid combination of arguments`),
+			},
+		},
+	})
+}
+
 /*
 Resources Endpoints tests
 */
