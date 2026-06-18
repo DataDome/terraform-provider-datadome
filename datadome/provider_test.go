@@ -764,9 +764,9 @@ resource "datadome_custom_rule" "accConfig" {
 
   policy_options {
     rate_limit {
-      applies_to              = "ip"
-      threshold               = 0
-      time_frame              = "1h"
+      applies_to               = "ip"
+      threshold                = 0
+      time_frame               = "15m"
       response_after_threshold = "block"
     }
   }
@@ -825,9 +825,9 @@ resource "datadome_custom_rule" "accConfig" {
 
   policy_options {
     rate_limit {
-      applies_to              = "ip"
-      threshold               = 100
-      time_frame              = "1h"
+      applies_to               = "ip"
+      threshold                = 100
+      time_frame               = "15m"
       response_after_threshold = "block"
     }
     time_box {
