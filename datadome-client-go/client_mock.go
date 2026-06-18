@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"strconv"
+
+	"github.com/google/uuid"
 )
 
 // MockClientCustomRule structure for test purposes on the custom rules
@@ -110,7 +111,8 @@ func (m *MockClientEndpoint) Create(ctx context.Context, params Endpoint) (*stri
 	}
 
 	if params.ID == nil {
-		ID := strconv.Itoa(rand.Int())
+		newUUID := uuid.New()
+		ID := newUUID.String()
 		params.ID = &ID
 	}
 
