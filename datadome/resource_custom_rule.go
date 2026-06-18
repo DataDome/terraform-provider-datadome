@@ -86,11 +86,11 @@ func resourceCustomRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					validEnpointTypes := []string{"web", "account-creation", "login", "cart", "forms", "payment-web", "rss", "submit", "api-app-mobile", "account-creation-app-mobile", "api-app-mobile-login", "cart-app-mobile", "forms-app-mobile", "payment-app-mobile", "agentic-general", "agentic-account-creation", "agentic-login", "agentic-cart", "agentic-forms", "agentic-payment", "api"}
+					validEndpointTypes := []string{"web", "account-creation", "login", "cart", "forms", "payment-web", "rss", "submit", "api-app-mobile", "account-creation-app-mobile", "api-app-mobile-login", "cart-app-mobile", "forms-app-mobile", "payment-app-mobile", "agentic-general", "agentic-account-creation", "agentic-login", "agentic-cart", "agentic-forms", "agentic-payment", "api"}
 					var diags diag.Diagnostics
 					value := v.(string)
 
-					if !slices.Contains(validEnpointTypes, value) {
+					if !slices.Contains(validEndpointTypes, value) {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
