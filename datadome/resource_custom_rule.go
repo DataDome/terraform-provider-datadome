@@ -277,6 +277,23 @@ func customizeDiffCustomRules(ctx context.Context, data *schema.ResourceDiff, me
 		}
 	}
 
+	response := data.Get("response").(string)
+
+	// overridden_bot required for monetize and intent_based responses
+	if response == "monetize" || response == "intent_based" {
+		obRaw, ok := data.GetOk("overridden_bot")
+		if !ok || len(obRaw.([]interface{})) == 0 {
+			return fmt.Errorf("overridden_bot must be set when response is %q", response)
+		}
+	}
+
+	// policy_options only allowed for allow and intent_based responses
+	if response != "allow" && response != "intent_based" {
+		if _, ok := data.GetOk("policy_options"); ok {
+			return fmt.Errorf("policy_options is only allowed when response is \"allow\" or \"intent_based\"")
+		}
+	}
+
 	rlRaw, hasRateLimit := data.GetOk("policy_options.0.rate_limit.0.applies_to")
 	if !hasRateLimit {
 		return nil

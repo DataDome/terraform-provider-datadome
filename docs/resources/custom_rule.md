@@ -68,7 +68,7 @@ resource "datadome_custom_rule" "new" {
     rate_limit {
       applies_to               = "ip"
       threshold                = 100
-      time_frame               = "1h"
+      time_frame               = "15m"
       response_after_threshold = "block"
     }
   }
@@ -98,7 +98,7 @@ resource "datadome_custom_rule" "new" {
 
 - `name` - (Required) Name of your custom rule. You cannot have multiple rules with the same name.
 - `query` - (Required) Your query, for more information refer to the DataDome [documentation](https://docs.datadome.co/docs/syntax-guidelines)
-- `response` - (Required) The action applied to matching requests. 'device_check' triggers a device verification challenge. 'intent_based' applies an intent-based evaluation and authorizes legitimate traffic while blocking fraud attempts. 'monetize' triggers a monetization flow leveraging an existing monetization partner. 'intent_based' and 'monetize' values are ONLY valid when overridden_bot references an AI Agent. Policy options (rate limit, time box) are ONLY available for 'allow' and 'intent_based'.
+- `response` - (Required) The action applied to matching requests. Must be one of `allow`, `captcha`, `block`, `device_check`, `intent_based`, `monetize`. `device_check` triggers a device verification challenge. `intent_based` applies an intent-based evaluation. `monetize` triggers a monetization flow. `intent_based` and `monetize` are only valid when `overridden_bot` references an AI Agent. `policy_options` is only available for `allow` and `intent_based`.
 - `endpoint_type` - (Optional) The endpoint on which you want your custom rule to be applied. If no endpoint type is specified, the custom rule will be applied to all endpoint types.
 - `priority` - (Optional) Your rule priority, must be one of `high`, `low`, `normal`. Defaults to `high`.
 - `enabled` - (Optional) Determines whether rule is enabled. If its value is set, it will override the value of `activated_at` and `expired_at` fields.
