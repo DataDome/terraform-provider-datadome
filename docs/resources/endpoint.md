@@ -53,10 +53,10 @@ resource "datadome_endpoint" "new" {
 - `name` - (Required) The name of the endpoint resource.
 - `description` - (Optional) The description of the endpoint resource.
 - `position_before` - (Optional) The ID of the endpoint before which the new endpoint should be created. If this field is empty, it takes the ID of the default endpoint `WEB (default)`.
-- `source` - (Required) Determine from where the traffic comes from. It only accepts `Api`, `Mobile App`, or `Web Browser`.
+- `source` - (Required) Determine from where the traffic comes from. It only accepts `Api`, `Mobile App`, `Web Browser`, or `Agentic Protocol`.
 - `traffic_usage` - (Required) Determine for which purpose this endpoint is created. The value of this field depends on the `source` field:
   - For `Api`, it only accepts `General`.
-  - For `Mobile App`, it accepts `General`, `Login`, `Payment`, `Cart`, `Forms`, or `Account Creation`.
+  - For `Mobile App` and `Agentic Protocol`, it accepts `General`, `Login`, `Payment`, `Cart`, `Forms`, or `Account Creation`.
   - For `Web Browser`, it accepts `Account Creation`, `Cart`, `Form`, `Forms`, `General`, `Login`, `Payment`, or `Rss`.
 - `cookie_same_site` - (Optional) DataDome's cookie SameSite parameter for the endpoint. It only accepts `None`, `Lax`, or `Strict`. When not specified, it defaults to `Lax`.
 - `domain` - (Optional) The domain for the endpoint when using the regex definition method.
