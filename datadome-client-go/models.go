@@ -1,5 +1,7 @@
 package datadome
 
+import "encoding/json"
+
 // HttpResponse from the DataDome's API
 type HttpResponse struct {
 	Data    interface{} `json:"data"`
@@ -48,6 +50,13 @@ type CustomRule struct {
 type OverriddenBot struct {
 	UUID string `json:"uuid"`
 	Name string `json:"name"`
+}
+
+// MarshalJSON serializes OverriddenBot as a bare UUID string, matching the
+// create/update request schema where overridden_bot is a string. Responses are
+// still decoded into the full {uuid, name} object via the default unmarshalling.
+func (o OverriddenBot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.UUID)
 }
 
 // PolicyOptions holds an optional rate-limit or time-box policy for a custom rule.
