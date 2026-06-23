@@ -51,10 +51,9 @@ func resourceCustomRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					validResponses := []string{"allow", "captcha", "block", "device_check", "intent_based", "monetize", "rate_limiting", "time_boxing"}
 					var diags diag.Diagnostics
 					value := v.(string)
-					if !slices.Contains(validResponses, value) {
+					if value != "allow" && value != "captcha" && value != "block" && value != "device_check" && value != "intent_based" && value != "monetize" {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "wrong value",
@@ -264,8 +263,6 @@ func resourceCustomRule() *schema.Resource {
 // It raises an error when:
 // - expired_at is before activated_at
 // - overridden_bot is set and rate_limit.applies_to is not "all_traffic"
-// - time_box is set and response is not "time_boxing"
-// - rate_limit is set and response is not "rate_limiting"
 // - rate_limit.applies_to is "all_traffic" and time_frame is not "1h" or "1d"
 // - rate_limit.applies_to is "ip" or "session" and time_frame is not "1m", "15m", or "4h"
 func customizeDiffCustomRules(ctx context.Context, data *schema.ResourceDiff, meta interface{}) error {
@@ -297,16 +294,7 @@ func customizeDiffCustomRules(ctx context.Context, data *schema.ResourceDiff, me
 		}
 	}
 
-	if _, ok := data.GetOk("policy_options.0.time_box"); ok {
-		if response != "time_boxing" {
-			return fmt.Errorf("response must be \"time_boxing\" when time_box is set, got %q", response)
-		}
-	}
-
 	rlRaw, hasRateLimit := data.GetOk("policy_options.0.rate_limit.0.applies_to")
-	if hasRateLimit && response != "rate_limiting" {
-		return fmt.Errorf("response must be \"rate_limiting\" when rate_limit is set, got %q", response)
-	}
 	if !hasRateLimit {
 		return nil
 	}
