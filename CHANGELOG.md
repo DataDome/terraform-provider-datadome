@@ -1,5 +1,24 @@
 # DataDome Terraform Provider
 
+## 2.4.0 (2026-06-30)
+
+### ENHANCEMENTS:
+
+- Add support of `rate_limit` and `time_box` policy options for custom rules
+- Add new `endpoint_type` values for custom rules:
+  - `agentic-general`
+  - `agentic-account-creation`
+  - `agentic-login`
+  - `agentic-cart`
+  - `agentic-forms`
+  - `agentic-payment`
+- Add new `response` values for custom rules:
+  - device_check
+  - intent_based
+  - monetize
+- Add `overridden_bot` field to specify which verified model is overridden by the custom rule
+- Add `Agentic Protocol` source value for endpoints
+
 ## 2.3.2 (2026-03-25)
 
 ### BUG FIXES:
