@@ -23,8 +23,8 @@ func resourceCustomRule() *schema.Resource {
 		DeleteContext: resourceCustomRuleDelete,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"query": {
@@ -33,15 +33,15 @@ func resourceCustomRule() *schema.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"response": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"allow", "captcha", "block", "device_check", "intent_based", "monetize"}, false),
 			},
 			"priority": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"high", "normal", "low"}, false),
-				Default: "high",
+				Default:      "high",
 			},
 			"endpoint_type": {
 				Type:     schema.TypeString,
