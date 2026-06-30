@@ -3,9 +3,7 @@ package datadome
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/datadome/terraform-provider/common"
@@ -27,20 +25,7 @@ func resourceCustomRule() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					var diags diag.Diagnostics
-					value := v.(string)
-					trimedValue := strings.TrimSpace(value)
-					if trimedValue == "" {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "wrong value",
-							Detail:   "the name value should not be blank",
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"query": {
 				Type:         schema.TypeString,
@@ -50,56 +35,40 @@ func resourceCustomRule() *schema.Resource {
 			"response": {
 				Type:     schema.TypeString,
 				Required: true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					var diags diag.Diagnostics
-					value := v.(string)
-					if value != "allow" && value != "captcha" && value != "block" && value != "device_check" && value != "intent_based" && value != "monetize" {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable response", value),
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
+				ValidateFunc: validation.StringInSlice([]string{"allow", "captcha", "block", "device_check", "intent_based", "monetize"}, false),
 			},
 			"priority": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					var diags diag.Diagnostics
-					value := v.(string)
-					if value != "high" && value != "normal" && value != "low" {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable priority", value),
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
+				ValidateFunc: validation.StringInSlice([]string{"high", "normal", "low"}, false),
 				Default: "high",
 			},
 			"endpoint_type": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					validEndpointTypes := []string{"web", "account-creation", "login", "cart", "forms", "payment-web", "rss", "submit", "api-app-mobile", "account-creation-app-mobile", "api-app-mobile-login", "cart-app-mobile", "forms-app-mobile", "payment-app-mobile", "agentic-general", "agentic-account-creation", "agentic-login", "agentic-cart", "agentic-forms", "agentic-payment", "api"}
-					var diags diag.Diagnostics
-					value := v.(string)
-
-					if !slices.Contains(validEndpointTypes, value) {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable endpoint_type", value),
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
+				ValidateFunc: validation.StringInSlice([]string{
+					"web",
+					"account-creation",
+					"login",
+					"cart",
+					"forms",
+					"payment-web",
+					"rss",
+					"submit",
+					"api-app-mobile",
+					"account-creation-app-mobile",
+					"api-app-mobile-login",
+					"cart-app-mobile",
+					"forms-app-mobile",
+					"payment-app-mobile",
+					"agentic-general",
+					"agentic-account-creation",
+					"agentic-login",
+					"agentic-cart",
+					"agentic-forms",
+					"agentic-payment",
+					"api",
+				}, false),
 			},
 			"enabled": {
 				Type:     schema.TypeBool,

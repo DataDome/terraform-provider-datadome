@@ -579,23 +579,23 @@ func TestAccCustomRuleResource_wrongParameters(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCustomRuleResourceConfigWrongResponse,
-				ExpectError: regexp.MustCompile(`"wrong_response" is not an acceptable response`),
+				ExpectError: regexp.MustCompile(`expected response to be one of \[.*\], got wrong_response`),
 			},
 			{
 				Config:      testAccCustomRuleResourceConfigWrongEndpoint,
-				ExpectError: regexp.MustCompile(`"wrong_endpoint" is not an acceptable endpoint`),
+				ExpectError: regexp.MustCompile(`expected endpoint_type to be one of \[.*\], got wrong_endpoint`),
 			},
 			{
 				Config:      testAccCustomRuleResourceConfigWrongPriority,
-				ExpectError: regexp.MustCompile(`"wrong_priority" is not an acceptable priority`),
+				ExpectError: regexp.MustCompile(`expected priority to be one of \[.*\], got wrong_priority`),
 			},
 			{
 				Config:      testAccCustomRuleResourceConfigEmptyName,
-				ExpectError: regexp.MustCompile(`the name value should not be blank`),
+				ExpectError: regexp.MustCompile(`expected "name" to not be an empty string or whitespace`),
 			},
 			{
 				Config:      testAccCustomRuleResourceConfigBlankName,
-				ExpectError: regexp.MustCompile(`the name value should not be blank`),
+				ExpectError: regexp.MustCompile(`expected "name" to not be an empty string or whitespace`),
 			},
 			{
 				Config:      testAccCustomRuleResourceConfigEmptyQuery,
@@ -1001,6 +1001,51 @@ resource "datadome_custom_rule" "accConfig" {
 }
 `
 
+const testAccCustomRuleResourceConfigWithPolicyOptionsOnBlock = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "block"
+  endpoint_type = "web"
+  priority      = "low"
+
+  policy_options {
+    rate_limit {
+      applies_to               = "ip"
+      threshold                = 100
+      time_frame               = "15m"
+      response_after_threshold = "block"
+    }
+  }
+}
+`
+
+const testAccCustomRuleResourceConfigWithMonetizeWithoutOverriddenBot = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "monetize"
+  endpoint_type = "web"
+  priority      = "low"
+}
+`
+
+const testAccCustomRuleResourceConfigWithIntentBasedWithoutOverriddenBot = `
+provider "datadome" {}
+
+resource "datadome_custom_rule" "accConfig" {
+  name          = "acc-test"
+  query         = "ip: 192.168.0.1"
+  response      = "intent_based"
+  endpoint_type = "web"
+  priority      = "low"
+}
+`
+
 // TestAccCustomRuleResource_wrongPolicyParameters tests validation errors for policy_options fields
 func TestAccCustomRuleResource_wrongPolicyParameters(t *testing.T) {
 	mockClient := datadome.NewMockClientCustomRule()
@@ -1046,6 +1091,18 @@ func TestAccCustomRuleResource_wrongPolicyParameters(t *testing.T) {
 			{
 				Config:      testAccCustomRuleResourceConfigWithIpAndForbiddenTimeFrame,
 				ExpectError: regexp.MustCompile(`rate_limit\.time_frame must be "1m", "15m", or "4h" when applies_to is "ip"`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithPolicyOptionsOnBlock,
+				ExpectError: regexp.MustCompile(`policy_options is only allowed when response is "allow" or "intent_based"`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithMonetizeWithoutOverriddenBot,
+				ExpectError: regexp.MustCompile(`overridden_bot must be set when response is "monetize"`),
+			},
+			{
+				Config:      testAccCustomRuleResourceConfigWithIntentBasedWithoutOverriddenBot,
+				ExpectError: regexp.MustCompile(`overridden_bot must be set when response is "intent_based"`),
 			},
 		},
 	})
@@ -1635,15 +1692,15 @@ func TestAccEndpointResource_wrongParameters(t *testing.T) {
 			},
 			{
 				Config:      testAccEndpointConfigWrongResponseFormat,
-				ExpectError: regexp.MustCompile(`"wrong_response_format" is not an acceptable response_format`),
+				ExpectError: regexp.MustCompile(`expected response_format to be one of \[.*\], got wrong_response_format`),
 			},
 			{
 				Config:      testAccEndpointConfigWrongSource,
-				ExpectError: regexp.MustCompile(`"wrong_source" is not an acceptable source`),
+				ExpectError: regexp.MustCompile(`expected source to be one of \[.*\], got wrong_source`),
 			},
 			{
 				Config:      testAccEndpointConfigWrongTrafficUsage,
-				ExpectError: regexp.MustCompile(`"wrong_traffic_usage" is not an acceptable traffic_usage`),
+				ExpectError: regexp.MustCompile(`expected traffic_usage to be one of \[.*\], got wrong_traffic_usage`),
 			},
 			{
 				Config:      testAccEndpointConfigWrongTrafficUsageWithSourceApi,
@@ -1655,7 +1712,7 @@ func TestAccEndpointResource_wrongParameters(t *testing.T) {
 			},
 			{
 				Config:      testAccEndpointConfigWrongCookieSameSite,
-				ExpectError: regexp.MustCompile(`"wrong_cookie_same_site" is not an acceptable cookie_same_site`),
+				ExpectError: regexp.MustCompile(`expected cookie_same_site to be one of \[.*\], got wrong_cookie_same_site`),
 			},
 			{
 				Config:      testAccEndpointConfigWrongPositionBeforeFormat,
