@@ -1,5 +1,7 @@
 package datadome
 
+import "encoding/json"
+
 // HttpResponse from the DataDome's API
 type HttpResponse struct {
 	Data    interface{} `json:"data"`
@@ -31,15 +33,54 @@ type CustomRules struct {
 
 // CustomRule structure containing the information of a custom rule
 type CustomRule struct {
-	ID           *int    `json:"id"`
-	Name         string  `json:"rule_name"`
-	Response     string  `json:"rule_response"`
-	Query        string  `json:"query"`
-	EndpointType string  `json:"endpoint_type"`
-	Priority     string  `json:"rule_priority"`
-	Enabled      *bool   `json:"rule_enabled,omitempty"`
-	ActivatedAt  *string `json:"activated_at,omitempty"`
-	ExpiredAt    *string `json:"expired_at,omitempty"`
+	ID            *int           `json:"id"`
+	Name          string         `json:"rule_name"`
+	Response      string         `json:"rule_response"`
+	Query         string         `json:"query"`
+	EndpointType  string         `json:"endpoint_type"`
+	Priority      string         `json:"rule_priority"`
+	Enabled       *bool          `json:"rule_enabled,omitempty"`
+	ActivatedAt   *string        `json:"activated_at,omitempty"`
+	ExpiredAt     *string        `json:"expired_at,omitempty"`
+	OverriddenBot *OverriddenBot `json:"overridden_bot,omitempty"`
+	PolicyOptions *PolicyOptions `json:"policy_options,omitempty"`
+}
+
+// OverriddenBot identifies a Verified Bot or AI Agent that the custom rule applies to.
+type OverriddenBot struct {
+	UUID string `json:"uuid"`
+	Name string `json:"name"`
+}
+
+// MarshalJSON serializes OverriddenBot as a bare UUID string, matching the
+// create/update request schema where overridden_bot is a string. Responses are
+// still decoded into the full {uuid, name} object via the default unmarshalling.
+func (o OverriddenBot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.UUID)
+}
+
+// PolicyOptions holds an optional rate-limit or time-box policy for a custom rule.
+// At most one of TimeBox or RateLimit may be set.
+// Only valid when the rule response is "allow" or "intent_based".
+type PolicyOptions struct {
+	TimeBox   *TimeBoxOptions   `json:"time_box,omitempty"`
+	RateLimit *RateLimitOptions `json:"rate_limit,omitempty"`
+}
+
+// TimeBoxOptions restricts a rule to specific hours of the week, applying an
+// alternative response outside the authorized window.
+type TimeBoxOptions struct {
+	AuthorizedHoursOfTheWeek []int  `json:"authorized_hours_of_the_week"`
+	ResponseOutsideTimeBox   string `json:"response_outside_time_box"`
+}
+
+// RateLimitOptions triggers an alternative response once a request threshold is
+// exceeded within a time window.
+type RateLimitOptions struct {
+	AppliesTo              string `json:"applies_to"`
+	Threshold              int    `json:"threshold"`
+	TimeFrame              string `json:"time_frame"`
+	ResponseAfterThreshold string `json:"response_after_threshold"`
 }
 
 // Endpoint structure containing the information of an endpoint

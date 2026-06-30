@@ -8,7 +8,6 @@ import (
 
 	"github.com/datadome/terraform-provider/common"
 	dd "github.com/datadome/terraform-provider/datadome-client-go"
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -40,61 +39,27 @@ func resourceEndpoint() *schema.Resource {
 			"traffic_usage": {
 				Type:     schema.TypeString,
 				Required: true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					var diags diag.Diagnostics
-					value := v.(string)
-					if value != "Account Creation" &&
-						value != "Cart" &&
-						value != "Form" &&
-						value != "Forms" &&
-						value != "General" &&
-						value != "Login" &&
-						value != "Payment" &&
-						value != "Rss" {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable traffic_usage", value),
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
+				ValidateFunc: validation.StringInSlice([]string{
+					"Account Creation",
+					"Cart",
+					"Form",
+					"Forms",
+					"General",
+					"Login",
+					"Payment",
+					"Rss",
+				}, false),
 			},
 			"source": {
-				Type:     schema.TypeString,
-				Required: true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					var diags diag.Diagnostics
-					value := v.(string)
-					if value != "Api" && value != "Mobile App" && value != "Web Browser" && value != "Agentic Protocol" {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable source", value),
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"Api", "Mobile App", "Web Browser", "Agentic Protocol"}, false),
 			},
 			"cookie_same_site": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					var diags diag.Diagnostics
-					value := v.(string)
-					if value != "Lax" && value != "Strict" && value != "None" {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable cookie_same_site", value),
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
-				Default: "Lax",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"Lax", "Strict", "None"}, false),
+				Default:      "Lax",
 			},
 			"domain": {
 				Type:         schema.TypeString,
@@ -127,22 +92,10 @@ func resourceEndpoint() *schema.Resource {
 				AtLeastOneOf: []string{"domain", "path_inclusion", "path_exclusion", "user_agent_inclusion", "query"},
 			},
 			"response_format": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					var diags diag.Diagnostics
-					value := v.(string)
-					if value != "json" && value != "html" && value != "auto" {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "wrong value",
-							Detail:   fmt.Sprintf("%q is not an acceptable response_format", value),
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
-				Default: "auto",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"json", "html", "auto"}, false),
+				Default:      "auto",
 			},
 			"detection_enabled": {
 				Type:     schema.TypeBool,
